@@ -1,6 +1,7 @@
 package internal
 
 import (
+	"app/internal/controllers"
 	"app/internal/middleware"
 	"context"
 
@@ -9,16 +10,21 @@ import (
 	"go.uber.org/fx"
 )
 
-func createEchoRoutes(e *echo.Echo, authClient *auth.Client) {
-	e.GET("/", func(c echo.Context) error {
-		return c.String(200, "Hello, World!")
-	}, middleware.FirebaseAuth(authClient, true))
+func NewEchoServer(
+	authClient *auth.Client,
+	contestController *controllers.ContestController,
+) *echo.Echo {
+	e := echo.New()
+
+	e.GET("/contests/list",
+		contestController.ListContests,
+		middleware.RequireFirebaseAuth(authClient),
+	)
+
+	return e
 }
 
-func StartEchoServer(lc fx.Lifecycle, authClient *auth.Client) *echo.Echo {
-	e := echo.New()
-	createEchoRoutes(e, authClient)
-
+func StartEchoServer(lc fx.Lifecycle, e *echo.Echo) *echo.Echo {
 	lc.Append(fx.Hook{
 		OnStart: func(ctx context.Context) error {
 			go e.Start(":8080")

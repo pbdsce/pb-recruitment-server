@@ -59,3 +59,11 @@ func FirebaseAuth(authClient *auth.Client, optional bool) echo.MiddlewareFunc {
 		}
 	}
 }
+
+func RequireFirebaseAuth(authClient *auth.Client) echo.MiddlewareFunc {
+	return FirebaseAuth(authClient, false)
+}
+
+func OptionalFirebaseAuth(authClient *auth.Client) echo.MiddlewareFunc {
+	return FirebaseAuth(authClient, true)
+}
