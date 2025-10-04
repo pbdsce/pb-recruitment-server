@@ -1,9 +1,22 @@
 package main
 
-import "github.com/labstack/echo/v4"
+import (
+	"app/internal"
+	"app/internal/boot"
+	"log"
+
+	"go.uber.org/fx"
+)
 
 func main() {
-	e := echo.New()
+	if err := boot.LoadEnv(); err != nil {
+		log.Fatal(err)
+	}
 
-	e.Logger.Fatal(e.Start(":8080"))
+	fx.New(
+		fx.Provide(boot.NewFirebaseAuth),
+
+		// Start the Echo server
+		fx.Invoke(internal.StartEchoServer),
+	).Run()
 }
