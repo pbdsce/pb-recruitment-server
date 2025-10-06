@@ -2,7 +2,6 @@ package internal
 
 import (
 	"app/internal/controllers"
-	"app/internal/middleware"
 	"context"
 
 	"firebase.google.com/go/v4/auth"
@@ -20,15 +19,14 @@ func NewEchoServer(
 	e.Use(mdw.Logger())
 	e.Use(mdw.CORS())
 
-	e.GET("/contests/list",
-		contestController.ListContests,
-		middleware.OptionalFirebaseAuth(authClient),
-	)
-
-	e.POST("/contests/:id/register",
-		contestController.RegisterParticipant,
-		middleware.RequireFirebaseAuth(authClient),
-	)
+	// Health check endpoint
+	// This can be used by Kubernetes or any load balancer
+	// to check if the server is running and healthy
+	e.GET("/health", func(c echo.Context) error {
+		return c.JSON(200, map[string]string{
+			"status": "ok",
+		})
+	})
 
 	return e
 }
