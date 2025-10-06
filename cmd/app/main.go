@@ -6,6 +6,7 @@ import (
 	"app/internal/controllers"
 	"app/internal/routes"
 	"app/internal/services"
+	"app/internal/stores"
 	"log"
 
 	"go.uber.org/fx"
@@ -29,6 +30,8 @@ func main() {
 			services.NewSubmissionService,
 			// Server
 			internal.NewEchoServer,
+			// Stores
+			stores.NewStorage,
 		),
 
 		// Add routes to the Echo server
