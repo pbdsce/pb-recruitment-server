@@ -22,9 +22,11 @@ func main() {
 			// Controllers
 			controllers.NewContestController,
 			controllers.NewUserController,
+			controllers.NewSubmissionController,
 			// Services
 			services.NewContestService,
 			services.NewUserService,
+			services.NewSubmissionService,
 			// Server
 			internal.NewEchoServer,
 		),
@@ -32,6 +34,7 @@ func main() {
 		// Add routes to the Echo server
 		fx.Invoke(routes.AddUserRoutes),
 		fx.Invoke(routes.AddContestRoutes),
+		fx.Invoke(routes.AddSubmissionRoutes),
 
 		// Start the Echo server
 		fx.Invoke(internal.StartEchoServer),
