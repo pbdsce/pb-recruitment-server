@@ -19,10 +19,13 @@ func main() {
 	fx.New(
 		fx.Provide(
 			boot.NewFirebaseAuth,
+			// Controllers
 			controllers.NewContestController,
 			controllers.NewUserController,
+			// Services
 			services.NewContestService,
 			services.NewUserService,
+			// Server
 			internal.NewEchoServer,
 		),
 
