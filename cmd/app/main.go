@@ -4,9 +4,11 @@ import (
 	"app/internal"
 	"app/internal/boot"
 	"app/internal/controllers"
+	"app/internal/db"
 	"app/internal/routes"
 	"app/internal/services"
 	"app/internal/stores"
+	"context"
 	"log"
 
 	"go.uber.org/fx"
@@ -34,6 +36,11 @@ func main() {
 			stores.NewStorage,
 		),
 
+		// Initialize database connection
+		fx.Invoke(func() error {
+			return db.InitDB()
+		}),
+
 		// Add routes to the Echo server
 		fx.Invoke(routes.AddUserRoutes),
 		fx.Invoke(routes.AddContestRoutes),
@@ -41,5 +48,14 @@ func main() {
 
 		// Start the Echo server
 		fx.Invoke(internal.StartEchoServer),
+
+		// Graceful shutdown - close database connection
+		fx.Invoke(func(lc fx.Lifecycle) {
+			lc.Append(fx.Hook{
+				OnStop: func(ctx context.Context) error {
+					return db.CloseDB()
+				},
+			})
+		}),
 	).Run()
 }
