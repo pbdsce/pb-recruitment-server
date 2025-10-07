@@ -52,24 +52,22 @@ func (config *DBConfig) GetConnectionString() string {
 
 func NewDBConn(lc fx.Lifecycle) (*sql.DB, error) {
 	config := LoadDBConfig()
-	var db *sql.DB
+
+	db, err := sql.Open("pgx", config.GetConnectionString())
+	if err != nil {
+		return nil, fmt.Errorf("failed to open database connection: %w", err)
+	}
+
+	db.SetMaxOpenConns(config.MaxOpenConns)
+	db.SetMaxIdleConns(config.MaxIdleConns)
+	db.SetConnMaxLifetime(config.ConnMaxLifetime)
 
 	lc.Append(fx.Hook{
 		OnStart: func(ctx context.Context) error {
-			var err error
-			db, err = sql.Open("pgx", config.GetConnectionString())
-			if err != nil {
-				return fmt.Errorf("failed to open database connection: %w", err)
-			}
-
-			db.SetMaxOpenConns(config.MaxOpenConns)
-			db.SetMaxIdleConns(config.MaxIdleConns)
-			db.SetConnMaxLifetime(config.ConnMaxLifetime)
-
 			if err := db.PingContext(ctx); err != nil {
+				_ = db.Close()
 				return fmt.Errorf("database ping failed: %w", err)
 			}
-
 			log.Println("Database connection established successfully")
 			return nil
 		},
@@ -81,6 +79,5 @@ func NewDBConn(lc fx.Lifecycle) (*sql.DB, error) {
 			return nil
 		},
 	})
-
 	return db, nil
 }
