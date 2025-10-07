@@ -6,7 +6,6 @@ import (
 	"database/sql"
 	"fmt"
 	"log"
-	"time"
 )
 
 type ContestStore struct {
@@ -38,17 +37,11 @@ func (s *ContestStore) ListContests(ctx context.Context) ([]models.Contest, erro
 	var contests []models.Contest
 	for rows.Next() {
 		var c models.Contest
-		var regStart, regEnd, start, end time.Time
 
-		if err := rows.Scan(&c.ID, &c.Name, &regStart, &regEnd, &start, &end); err != nil {
+		if err := rows.Scan(&c.ID, &c.Name, &c.RegistrationStartTime, &c.RegistrationEndTime, &c.StartTime, &c.EndTime); err != nil {
 			log.Printf("contest-store: row scan failed: %v", err)
 			return nil, fmt.Errorf("scan contest row: %w", err)
 		}
-
-		c.RegistrationStartTime = regStart.Unix()
-		c.RegistrationEndTime = regEnd.Unix()
-		c.StartTime = start.Unix()
-		c.EndTime = end.Unix()
 
 		contests = append(contests, c)
 	}

@@ -1,4 +1,4 @@
-CREATE TYPE submission_type AS ENUM ('MCQ', 'Code');
+CREATE TYPE submission_type AS ENUM ('mcq', 'code');
 
 CREATE TYPE submission_status AS ENUM (
     'pending',
@@ -19,6 +19,6 @@ CREATE TABLE submissions (
     language TEXT,                
     code TEXT,                             
     choices INT[],                         
-    status submission_status NOT NULL DEFAULT 'pending',
-    created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW()
+    status submission_status NOT NULL,
+    created_at BIGINT NOT NULL
 );
