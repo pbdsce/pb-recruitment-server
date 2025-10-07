@@ -3,7 +3,6 @@ package db
 import (
 	"context"
 	"database/sql"
-	"fmt"
 	"log"
 	"os"
 	"strconv"
@@ -50,12 +49,12 @@ func (config *DBConfig) GetConnectionString() string {
 	return config.Addr
 }
 
-func NewDBConn(lc fx.Lifecycle) (*sql.DB, error) {
+func NewDBConn(lc fx.Lifecycle) *sql.DB {
 	config := LoadDBConfig()
 
 	db, err := sql.Open("pgx", config.GetConnectionString())
 	if err != nil {
-		return nil, fmt.Errorf("failed to open database connection: %w", err)
+		log.Fatalf("failed to open database connection: %v", err)
 	}
 
 	db.SetMaxOpenConns(config.MaxOpenConns)
@@ -66,7 +65,7 @@ func NewDBConn(lc fx.Lifecycle) (*sql.DB, error) {
 		OnStart: func(ctx context.Context) error {
 			if err := db.PingContext(ctx); err != nil {
 				_ = db.Close()
-				return fmt.Errorf("database ping failed: %w", err)
+				log.Fatalf("database ping failed: %v", err)
 			}
 			log.Println("Database connection established successfully")
 			return nil
@@ -79,5 +78,6 @@ func NewDBConn(lc fx.Lifecycle) (*sql.DB, error) {
 			return nil
 		},
 	})
-	return db, nil
+
+	return db
 }

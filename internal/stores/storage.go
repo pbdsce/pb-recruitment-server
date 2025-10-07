@@ -9,7 +9,7 @@ import (
 type Storage struct {
 	// Declarations of method extensions for each store go here
 	Contests interface {
-		ListContests(context.Context) ([]models.Contest, error)
+		ListContests(context.Context, int) ([]models.Contest, error)
 	}
 	Users interface {
 		// todo: add user store

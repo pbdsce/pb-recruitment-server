@@ -18,23 +18,32 @@ func NewContestStore(db *sql.DB) *ContestStore {
 	}
 }
 
-// SAMPLE -- fetches all contests from the database.
-func (s *ContestStore) ListContests(ctx context.Context) ([]models.Contest, error) {
-
+func (s *ContestStore) ListContests(ctx context.Context, page int) ([]models.Contest, error) {
 	if s == nil || s.db == nil {
 		return nil, fmt.Errorf("contest store: db is not initialized")
 	}
 
-	const q = `SELECT id, name, registration_start_time, registration_end_time, start_time, end_time FROM contests`
+	const pageSize = 20
+	if page < 1 {
+		page = 1
+	}
+	offset := (page - 1) * pageSize
 
-	rows, err := s.db.QueryContext(ctx, q)
+	const q = `
+		SELECT id, name, registration_start_time, registration_end_time, start_time, end_time
+		FROM contests
+		ORDER BY start_time DESC
+		LIMIT $1 OFFSET $2
+	`
+
+	rows, err := s.db.QueryContext(ctx, q, pageSize, offset)
 	if err != nil {
 		log.Printf("contest-store: query failed: %v", err)
 		return nil, fmt.Errorf("query contests: %w", err)
 	}
 	defer rows.Close()
 
-	var contests []models.Contest
+	contests := make([]models.Contest, 0)
 	for rows.Next() {
 		var c models.Contest
 

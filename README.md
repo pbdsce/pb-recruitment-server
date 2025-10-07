@@ -17,9 +17,9 @@ make migration create_users_table
 # Run migrations up
 make migrate-up
 
-# Rollback migrations (specify number of steps)
+# NOT AVAILABLE ON PROD - Rollback migrations (specify number of steps)
 make migrate-down 1
 
-# Force migration version (use with caution)
+# NOT AVAILABLE ON PROD - Force migration version (use with caution)
 make migrate-force 1
 ```

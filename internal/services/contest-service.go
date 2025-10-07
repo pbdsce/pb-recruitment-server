@@ -19,7 +19,7 @@ func (cs *ContestService) RegisterParticipant(contestID string, userID string) e
 	return nil
 }
 
-func (cs *ContestService) ListContests(ctx context.Context) ([]models.Contest, error) {
+func (cs *ContestService) ListContests(ctx context.Context, page int) ([]models.Contest, error) {
 	//SAMPLE
-	return cs.stores.Contests.ListContests(ctx)
+	return cs.stores.Contests.ListContests(ctx, page)
 }
