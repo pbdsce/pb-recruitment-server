@@ -1,10 +1,17 @@
 package services
 
+import (
+	"app/internal/models"
+	"app/internal/stores"
+	"context"
+)
+
 type ContestService struct {
+	stores *stores.Storage
 }
 
-func NewContestService() *ContestService {
-	return &ContestService{}
+func NewContestService(stores *stores.Storage) *ContestService {
+	return &ContestService{stores: stores}
 }
 
 func (cs *ContestService) RegisterParticipant(contestID string, userID string) error {
@@ -12,7 +19,7 @@ func (cs *ContestService) RegisterParticipant(contestID string, userID string) e
 	return nil
 }
 
-func (cs *ContestService) ListContests() []string {
-	// Realistically you would fetch this data from a database
-	return []string{"Contest1", "Contest2"}
+func (cs *ContestService) ListContests(ctx context.Context, page int) ([]models.Contest, error) {
+	//SAMPLE
+	return cs.stores.Contests.ListContests(ctx, page)
 }
