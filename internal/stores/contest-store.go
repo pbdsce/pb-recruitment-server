@@ -24,10 +24,8 @@ func (s *ContestStore) ListContests(ctx context.Context, page int) ([]models.Con
 	}
 
 	const pageSize = 20
-	if page < 1 {
-		page = 1
-	}
-	offset := (page - 1) * pageSize
+	page = max(0, page)
+	offset := page * pageSize
 
 	const q = `
 		SELECT id, name, registration_start_time, registration_end_time, start_time, end_time
