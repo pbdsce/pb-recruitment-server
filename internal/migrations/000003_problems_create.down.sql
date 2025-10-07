@@ -1,0 +1,2 @@
+DROP TABLE IF EXISTS problems;
+DROP TYPE IF EXISTS problem_type;

@@ -2,7 +2,10 @@ module app
 
 go 1.25.1
 
-require github.com/aws/aws-sdk-go-v2 v1.39.2
+require (
+	github.com/aws/aws-sdk-go-v2 v1.39.2
+	github.com/lib/pq v1.10.9
+)
 
 require (
 	github.com/aws/aws-sdk-go-v2/credentials v1.18.16 // indirect
@@ -18,11 +21,7 @@ require (
 	github.com/gabriel-vasile/mimetype v1.4.10 // indirect
 	github.com/go-playground/locales v0.14.1 // indirect
 	github.com/go-playground/universal-translator v0.18.1 // indirect
-	github.com/golang-migrate/migrate/v4 v4.19.0 // indirect
-	github.com/hashicorp/errwrap v1.1.0 // indirect
-	github.com/hashicorp/go-multierror v1.1.1 // indirect
 	github.com/leodido/go-urn v1.4.0 // indirect
-	github.com/lib/pq v1.10.9 // indirect
 )
 
 require (
