@@ -1,11 +1,24 @@
 package stores
 
-import "app/internal/models"
+import (
+	"app/internal/models"
+	"context"
+	"database/sql"
+)
 
 type UserStore struct {
-	users map[string]*models.User
+	db *sql.DB
 }
 
-func NewUserStore() *UserStore {
-	return &UserStore{}
+func NewUserStore(db *sql.DB) *UserStore {
+	return &UserStore{
+		db: db,
+	}
+}
+
+func (s *UserStore) GetByID(ctx context.Context, userID int64) (*models.User, error) {
+	//example
+	//interaction with db
+	user := &models.User{}
+	return user, nil
 }

@@ -1,11 +1,20 @@
 package stores
 
+import (
+	"app/internal/models"
+	"context"
+	"database/sql"
+)
+
 type Storage struct {
+	//Declarations of method extensions for each store go here
 	Contests interface {
 		//todo: add contest store
 	}
 	Users interface {
 		//todo: add user store
+		//example
+		GetByID(context.Context, int64) (*models.User, error)
 	}
 	Submissions interface {
 		//todo: add submission store
@@ -18,12 +27,12 @@ type Storage struct {
 	}
 }
 
-func NewStorage() *Storage {
+func NewStorage(db *sql.DB) *Storage {
 	return &Storage{
-		Contests:    NewContestStore(),
-		Users:       NewUserStore(),
-		Submissions: NewSubmissionStore(),
-		Rankings:    NewRankingStore(),
-		Problems:    NewProblemStore(),
+		Contests:    NewContestStore(db),
+		Users:       NewUserStore(db),
+		Submissions: NewSubmissionStore(db),
+		Rankings:    NewRankingStore(db),
+		Problems:    NewProblemStore(db),
 	}
 }

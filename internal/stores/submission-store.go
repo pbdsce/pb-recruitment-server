@@ -1,11 +1,15 @@
 package stores
 
-import "app/internal/models"
+import (
+	"database/sql"
+)
 
 type SubmissionStore struct {
-	submissions map[string]*models.Submission
+	db *sql.DB
 }
 
-func NewSubmissionStore() *SubmissionStore {
-	return &SubmissionStore{}
+func NewSubmissionStore(db *sql.DB) *SubmissionStore {
+	return &SubmissionStore{
+		db: db,
+	}
 }

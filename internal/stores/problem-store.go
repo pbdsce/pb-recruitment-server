@@ -1,11 +1,15 @@
 package stores
 
-import "app/internal/models"
+import (
+	"database/sql"
+)
 
 type ProblemStore struct {
-	problems map[string]*models.Problem
+	db *sql.DB
 }
 
-func NewProblemStore() *ProblemStore {
-	return &ProblemStore{}
+func NewProblemStore(db *sql.DB) *ProblemStore {
+	return &ProblemStore{
+		db: db,
+	}
 }

@@ -1,11 +1,15 @@
 package stores
 
-import "app/internal/models"
+import (
+	"database/sql"
+)
 
 type ContestStore struct {
-	contests map[string]*models.Contest
+	db *sql.DB
 }
 
-func NewContestStore() *ContestStore {
-	return &ContestStore{}
+func NewContestStore(db *sql.DB) *ContestStore {
+	return &ContestStore{
+		db: db,
+	}
 }

@@ -1,11 +1,15 @@
 package stores
 
-import "app/internal/models"
+import (
+	"database/sql"
+)
 
 type RankingStore struct {
-	rankings map[string]*models.Ranking
+	db *sql.DB
 }
 
-func NewRankingStore() *RankingStore {
-	return &RankingStore{}
+func NewRankingStore(db *sql.DB) *RankingStore {
+	return &RankingStore{
+		db: db,
+	}
 }

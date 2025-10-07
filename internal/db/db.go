@@ -41,7 +41,6 @@ func getEnv(key, defaultValue string) string {
 	return defaultValue
 }
 
-// GetConnectionString returns the PostgreSQL connection string
 func (config *DBConfig) GetConnectionString() string {
 	if config.Addr == "" {
 		panic("DB_ADDR environment variable is required")
@@ -49,16 +48,13 @@ func (config *DBConfig) GetConnectionString() string {
 	return config.Addr
 }
 
-var DB *sql.DB
-
-// InitDB initializes the database connection
-func InitDB() error {
+func NewDBConn() (*sql.DB, error) {
 	config := LoadDBConfig()
 
 	// Open database connection
 	db, err := sql.Open("postgres", config.GetConnectionString())
 	if err != nil {
-		return fmt.Errorf("failed to open database connection: %w", err)
+		return nil, fmt.Errorf("failed to open database connection: %w", err)
 	}
 
 	// Configure connection pool
@@ -68,18 +64,9 @@ func InitDB() error {
 
 	// Test the connection
 	if err := db.Ping(); err != nil {
-		return fmt.Errorf("failed to ping database: %w", err)
+		return nil, fmt.Errorf("failed to ping database: %w", err)
 	}
 
-	DB = db
 	log.Println("Database connection established successfully")
-	return nil
-}
-
-// CloseDB closes the database connection
-func CloseDB() error {
-	if DB != nil {
-		return DB.Close()
-	}
-	return nil
+	return db, nil
 }
