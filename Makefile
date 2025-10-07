@@ -21,8 +21,16 @@ migrate-up:
 
 .PHONY: migrate-down
 migrate-down:
+	@if [ "$(STAGE)" != "dev" ]; then \
+		echo "Error: migrate-down is allowed only in development (STAGE=dev)."; \
+		exit 1; \
+	fi
 	@migrate -path=$(MIGRATIONS_PATH) -database=$(DB_ADDR) down $(filter-out $@, $(MAKECMDGOALS))
 
 .PHONY: migrate-force
 migrate-force:
+	@if [ "$(STAGE)" != "dev" ]; then \
+		echo "Error: migrate-force is allowed only in development (STAGE=dev)."; \
+		exit 1; \
+	fi
 	@migrate -path=$(MIGRATIONS_PATH) -database=$(DB_ADDR) force $(filter-out $@, $(MAKECMDGOALS))
