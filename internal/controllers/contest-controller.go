@@ -32,6 +32,10 @@ func (cc *ContestController) RegisterParticipant(ctx echo.Context) error {
 }
 
 func (cc *ContestController) ListContests(ctx echo.Context) error {
-	contests := cc.contestService.ListContests()
+	//SAMPLE
+	contests, err := cc.contestService.ListContests(ctx.Request().Context())
+	if err != nil {
+		return ctx.JSON(http.StatusInternalServerError, map[string]string{"error": "failed to list contests"})
+	}
 	return ctx.JSON(http.StatusOK, contests)
 }

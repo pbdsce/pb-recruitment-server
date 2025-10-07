@@ -7,23 +7,21 @@ import (
 )
 
 type Storage struct {
-	//Declarations of method extensions for each store go here
+	// Declarations of method extensions for each store go here
 	Contests interface {
-		//todo: add contest store
+		ListContests(context.Context) ([]models.Contest, error)
 	}
 	Users interface {
-		//todo: add user store
-		//example
-		GetByID(context.Context, int64) (*models.User, error)
+		// todo: add user store
 	}
 	Submissions interface {
-		//todo: add submission store
+		// todo: add submission store
 	}
 	Rankings interface {
-		//todo: add ranking store
+		// todo: add ranking store
 	}
 	Problems interface {
-		//todo: add problem store
+		// todo: add problem store
 	}
 }
 

@@ -2,7 +2,6 @@ package routes
 
 import (
 	"app/internal/controllers"
-	"app/internal/middleware"
 
 	"firebase.google.com/go/v4/auth"
 	"github.com/labstack/echo/v4"
@@ -15,8 +14,9 @@ func AddContestRoutes(
 ) {
 	// List all contests
 	e.GET("/contests/list",
+		//SAMPLE FETCH ROUTE
 		contestController.ListContests,
-		middleware.OptionalFirebaseAuth(authClient),
+		//middleware.OptionalFirebaseAuth(authClient),
 	)
 
 	// // Get details of a specific contest
