@@ -1,6 +1,7 @@
 package db
 
 import (
+	"context"
 	"database/sql"
 	"fmt"
 	"log"
@@ -8,7 +9,8 @@ import (
 	"strconv"
 	"time"
 
-	_ "github.com/lib/pq"
+	_ "github.com/jackc/pgx/v5/stdlib"
+	"go.uber.org/fx"
 )
 
 // DBConfig holds database configuration
@@ -48,25 +50,37 @@ func (config *DBConfig) GetConnectionString() string {
 	return config.Addr
 }
 
-func NewDBConn() (*sql.DB, error) {
+func NewDBConn(lc fx.Lifecycle) (*sql.DB, error) {
 	config := LoadDBConfig()
+	var db *sql.DB
 
-	// Open database connection
-	db, err := sql.Open("postgres", config.GetConnectionString())
-	if err != nil {
-		return nil, fmt.Errorf("failed to open database connection: %w", err)
-	}
+	lc.Append(fx.Hook{
+		OnStart: func(ctx context.Context) error {
+			var err error
+			db, err = sql.Open("pgx", config.GetConnectionString())
+			if err != nil {
+				return fmt.Errorf("failed to open database connection: %w", err)
+			}
 
-	// Configure connection pool
-	db.SetMaxOpenConns(config.MaxOpenConns)
-	db.SetMaxIdleConns(config.MaxIdleConns)
-	db.SetConnMaxLifetime(config.ConnMaxLifetime)
+			db.SetMaxOpenConns(config.MaxOpenConns)
+			db.SetMaxIdleConns(config.MaxIdleConns)
+			db.SetConnMaxLifetime(config.ConnMaxLifetime)
 
-	// Test the connection
-	if err := db.Ping(); err != nil {
-		return nil, fmt.Errorf("failed to ping database: %w", err)
-	}
+			if err := db.PingContext(ctx); err != nil {
+				return fmt.Errorf("database ping failed: %w", err)
+			}
 
-	log.Println("Database connection established successfully")
+			log.Println("Database connection established successfully")
+			return nil
+		},
+
+		OnStop: func(ctx context.Context) error {
+			if db != nil {
+				return db.Close()
+			}
+			return nil
+		},
+	})
+
 	return db, nil
 }
