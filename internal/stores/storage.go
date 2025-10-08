@@ -2,8 +2,11 @@ package stores
 
 import (
 	"app/internal/models"
+	"app/internal/models/dto"
 	"context"
 	"database/sql"
+
+	"firebase.google.com/go/v4/auth"
 )
 
 type Storage struct {
@@ -12,7 +15,9 @@ type Storage struct {
 		ListContests(context.Context, int) ([]models.Contest, error)
 	}
 	Users interface {
-		// todo: add user store
+		CreateUser(context.Context, *auth.UserRecord, *dto.CreateUserRequest) (bool, error)
+		GetUserProfile(context.Context, string) (*models.User, error)
+		UpdateUserProfile(context.Context, string, *dto.UpdateUserProfileRequest) (bool, error)
 	}
 	Submissions interface {
 		GetSubmissionStatusByID(context.Context, string) (*models.Submission, error)

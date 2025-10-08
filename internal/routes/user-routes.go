@@ -14,6 +14,12 @@ func AddUserRoutes(
 	authClient *auth.Client,
 	userController *controllers.UserController,
 ) {
+	e.PUT("/users/create",
+		userController.CreateUser,
+		middleware.RequireFirebaseAuth(authClient),
+		middleware.ValidateRequest(new(dto.CreateUserRequest)),
+	)
+
 	e.GET("/users/profile",
 		userController.GetUserProfile,
 		middleware.RequireFirebaseAuth(authClient),
