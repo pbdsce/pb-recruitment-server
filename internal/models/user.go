@@ -6,6 +6,6 @@ type User struct {
 	Email        string `json:"email"`
 	USN          string `json:"usn"`
 	MobileNumber string `json:"mobile_number"`
-	JoiningYear  int    `json:"joining_year"`
+	CurrentYear  int    `json:"current_year"`
 	Department   string `json:"department"`
 }
