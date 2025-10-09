@@ -2,6 +2,8 @@ package routes
 
 import (
 	"app/internal/controllers"
+	"app/internal/middleware"
+	"app/internal/models/dto"
 
 	"firebase.google.com/go/v4/auth"
 	"github.com/labstack/echo/v4"
@@ -45,4 +47,25 @@ func AddSubmissionRoutes(
 	// 	middleware.RequireFirebaseAuth(authClient),
 	// 	middleware.ValidateRequest(new(dto.SubmitSubmissionRequest)),
 	// )
+
+	e.POST("/submission/submit",
+		submissionController.SubmitSubmission,
+		middleware.RequireFirebaseAuth(authClient),
+		middleware.ValidateRequest(new(dto.SubmitSubmissionRequest)),
+	)
+
+	e.GET("/submission/list",
+		submissionController.ListProblemSubmissions,
+		middleware.RequireFirebaseAuth(authClient),
+	)
+
+	e.GET("/submission/:id/status",
+		submissionController.GetSubmissionStatus,
+		middleware.RequireFirebaseAuth(authClient),
+	)
+
+	e.GET("/submission/:id/details",
+		submissionController.GetSubmissionDetails,
+		middleware.RequireFirebaseAuth(authClient),
+	)
 }

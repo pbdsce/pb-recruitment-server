@@ -35,6 +35,7 @@ func main() {
 			stores.NewStorage,
 			// Database
 			db.NewDBConn,
+			stores.ProvideSubmissions,
 		),
 
 		// Add routes to the Echo server
