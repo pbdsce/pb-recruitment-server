@@ -69,7 +69,7 @@ func (uc *UserController) UpdateUserProfile(ctx echo.Context) error {
 		})
 	}
 
-	if err := uc.userService.UpdateUserProfile(ctx.Request().Context(), userID, reqBody); err != nil {
+	if err := uc.userService.UpdateUserProfile(userID, reqBody); err != nil {
 		return ctx.JSON(http.StatusInternalServerError, map[string]string{
 			"error": "failed to update user profile",
 		})
