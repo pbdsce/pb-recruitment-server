@@ -4,8 +4,8 @@ import (
 	"app/internal/common"
 	"app/internal/models/dto"
 	"app/internal/services"
-	"net/http"
 	"fmt"
+	"net/http"
 	"regexp"
 	"strings"
 
@@ -23,21 +23,24 @@ func NewUserController(userService *services.UserService) *UserController {
 }
 
 func validateUserInput(usn string, mobile string, currentYear int) error {
-	usnPattern := `^[0-9][A-Z]{2}[0-9]{2}[A-Z]{2}[0-9]{3}$`  // Example: 1DS24CS123
-	appNumberPattern := `^[0-9]{2}[A-Z]{5}[0-9]{4}$`         // Example: 24UGDSI1650
-	phonePattern := `^\+91[0-9]{10}$`                        // Example: +911234567890
+	usnPattern := `^1DS2[1-4](AI|AE|AU|BT|CG|MD|ET|EC|ME|EE|CH|CB|IC|CD|CS|CV|IS)[0-9]{3}$` // Example: 1DS24IC015
+	appNumberPattern := `^25UGDS[0-9]{4}$`                                                  // Example: 25UGDS1234
+	phonePattern := `^[0-9]{10}$`                                                           // Example: 9234567890
 
 	usnUpper := strings.ToUpper(usn)
-	isUSN, _ := regexp.MatchString(usnPattern, usnUpper)
-	isAppNumber, _ := regexp.MatchString(appNumberPattern, usnUpper)
 
-	if currentYear == 1 && !isAppNumber {
-		return fmt.Errorf("First-year students must provide a valid Application Number (e.g., 24UGDSI1650)")
-	} else if currentYear != 1 && !isUSN {
-		return fmt.Errorf("Provide a valid USN (e.g., 1DS24CS123)")
+	if currentYear == 1 {
+		if matched, _ := regexp.MatchString(appNumberPattern, usnUpper); !matched {
+			return fmt.Errorf("first-year students must provide a valid Application Number (e.g., 25UGDS1234)")
+		}
+	} else {
+		if matched, _ := regexp.MatchString(usnPattern, usnUpper); !matched {
+			return fmt.Errorf("provide a valid USN (e.g., 1DS24IC015)")
+		}
 	}
+
 	if matched, _ := regexp.MatchString(phonePattern, mobile); !matched {
-		return fmt.Errorf("Invalid mobile number format. Expected format: +91XXXXXXXXXX")
+		return fmt.Errorf("invalid mobile number format")
 	}
 	return nil
 }
@@ -57,7 +60,7 @@ func (uc *UserController) CreateUser(ctx echo.Context) error {
 		})
 	}
 
-	if success == false {
+	if !success {
 		return ctx.JSON(http.StatusConflict, map[string]string{
 			"error": "user already exists",
 		})
@@ -89,8 +92,29 @@ func (uc *UserController) UpdateUserProfile(ctx echo.Context) error {
 	userID := ctx.Get(common.AUTH_USER_ID).(string)
 	reqBody := ctx.Get(common.VALIDATED_REQUEST_BODY).(*dto.UpdateUserProfileRequest)
 
-	if err := validateUserInput(reqBody.USN, reqBody.MobileNumber, reqBody.CurrentYear); err != nil {
-		return ctx.JSON(http.StatusBadRequest, map[string]string{"error": err.Error()})
+	// Fetch existing user to lock USN and CurrentYear
+	existingUser, err := uc.userService.GetUserProfile(ctx.Request().Context(), userID)
+	if err != nil {
+		return ctx.JSON(http.StatusInternalServerError, map[string]string{
+			"error": "failed to fetch user profile",
+		})
+	}
+	if existingUser == nil {
+		return ctx.JSON(http.StatusNotFound, map[string]string{
+			"error": "user not found",
+		})
+	}
+	if reqBody.USN != existingUser.USN || reqBody.CurrentYear != existingUser.CurrentYear {
+		return ctx.JSON(http.StatusBadRequest, map[string]string{
+			"error": "USN and Year cannot be changed",
+		})
+	}
+	// mob no. validation
+	phonePattern := `^[0-9]{10}$`
+	if matched, _ := regexp.MatchString(phonePattern, reqBody.MobileNumber); !matched {
+		return ctx.JSON(http.StatusBadRequest, map[string]string{
+			"error": "Invalid mobile number format",
+		})
 	}
 
 	success, err := uc.userService.UpdateUserProfile(ctx.Request().Context(), userID, reqBody)
