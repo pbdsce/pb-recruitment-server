@@ -4,6 +4,7 @@ import (
 	"app/internal/common"
 	"app/internal/models/dto"
 	"app/internal/services"
+	"errors"
 	"fmt"
 	"net/http"
 	"regexp"
@@ -53,16 +54,14 @@ func (uc *UserController) CreateUser(ctx echo.Context) error {
 		return ctx.JSON(http.StatusBadRequest, map[string]string{"error": err.Error()})
 	}
 
-	success, err := uc.userService.CreateUser(ctx.Request().Context(), userID, reqBody)
-	if err != nil {
+	if err := uc.userService.CreateUser(ctx.Request().Context(), userID, reqBody); err != nil {
+		if errors.Is(err, common.UserAlreadyExistsError{}) {
+			return ctx.JSON(http.StatusConflict, map[string]string{
+				"error": err.Error(),
+			})
+		}
 		return ctx.JSON(http.StatusInternalServerError, map[string]string{
 			"error": "failed to create user",
-		})
-	}
-
-	if !success {
-		return ctx.JSON(http.StatusConflict, map[string]string{
-			"error": "user already exists",
 		})
 	}
 
@@ -74,14 +73,13 @@ func (uc *UserController) GetUserProfile(ctx echo.Context) error {
 
 	user, err := uc.userService.GetUserProfile(ctx.Request().Context(), userID)
 	if err != nil {
+		if errors.Is(err, common.UserNotFoundError{}) {
+			return ctx.JSON(http.StatusNotFound, map[string]string{
+				"error": err.Error(),
+			})
+		}
 		return ctx.JSON(http.StatusInternalServerError, map[string]string{
 			"error": "failed to fetch user profile",
-		})
-	}
-
-	if user == nil {
-		return ctx.JSON(http.StatusNotFound, map[string]string{
-			"error": "user not found",
 		})
 	}
 
@@ -92,23 +90,6 @@ func (uc *UserController) UpdateUserProfile(ctx echo.Context) error {
 	userID := ctx.Get(common.AUTH_USER_ID).(string)
 	reqBody := ctx.Get(common.VALIDATED_REQUEST_BODY).(*dto.UpdateUserProfileRequest)
 
-	// Fetch existing user to lock USN and CurrentYear
-	existingUser, err := uc.userService.GetUserProfile(ctx.Request().Context(), userID)
-	if err != nil {
-		return ctx.JSON(http.StatusInternalServerError, map[string]string{
-			"error": "failed to fetch user profile",
-		})
-	}
-	if existingUser == nil {
-		return ctx.JSON(http.StatusNotFound, map[string]string{
-			"error": "user not found",
-		})
-	}
-	if reqBody.USN != existingUser.USN || reqBody.CurrentYear != existingUser.CurrentYear {
-		return ctx.JSON(http.StatusBadRequest, map[string]string{
-			"error": "USN and Year cannot be changed",
-		})
-	}
 	// mob no. validation
 	phonePattern := `^[0-9]{10}$`
 	if matched, _ := regexp.MatchString(phonePattern, reqBody.MobileNumber); !matched {
@@ -117,16 +98,14 @@ func (uc *UserController) UpdateUserProfile(ctx echo.Context) error {
 		})
 	}
 
-	success, err := uc.userService.UpdateUserProfile(ctx.Request().Context(), userID, reqBody)
-	if err != nil {
+	if err := uc.userService.UpdateUserProfile(ctx.Request().Context(), userID, reqBody); err != nil {
+		if errors.Is(err, common.UserNotFoundError{}) {
+			return ctx.JSON(http.StatusNotFound, map[string]string{
+				"error": err.Error(),
+			})
+		}
 		return ctx.JSON(http.StatusInternalServerError, map[string]string{
 			"error": "failed to update user profile",
-		})
-	}
-
-	if !success {
-		return ctx.JSON(http.StatusNotFound, map[string]string{
-			"error": "user profile update failed",
 		})
 	}
 

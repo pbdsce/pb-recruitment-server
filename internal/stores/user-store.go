@@ -1,6 +1,7 @@
 package stores
 
 import (
+	"app/internal/common"
 	"app/internal/models"
 	"app/internal/models/dto"
 	"context"
@@ -21,9 +22,9 @@ func NewUserStore(db *sql.DB) *UserStore {
 	}
 }
 
-func (us *UserStore) CreateUser(ctx context.Context, user *auth.UserRecord, req *dto.CreateUserRequest) (bool, error) {
+func (us *UserStore) CreateUser(ctx context.Context, user *auth.UserRecord, req *dto.CreateUserRequest) error {
 	if us == nil || us.db == nil {
-		return false, fmt.Errorf("contest store: db is not initialized")
+		return fmt.Errorf("contest store: db is not initialized")
 	}
 
 	const q = `
@@ -35,21 +36,21 @@ func (us *UserStore) CreateUser(ctx context.Context, user *auth.UserRecord, req 
 	res, err := us.db.ExecContext(ctx, q, user.UID, req.Name, user.Email, req.USN, req.MobileNumber, req.CurrentYear, req.Department)
 	if err != nil {
 		log.Printf("user-store: insert error %v", err)
-		return false, fmt.Errorf("insert error: %w", err)
+		return fmt.Errorf("insert error: %w", err)
 	}
 
 	// If rows affected is 0, then the user already exists
-	rows, err := res.RowsAffected()
+	affected, err := res.RowsAffected()
 	if err != nil {
-		log.Printf("user-store: update error %v", err)
-		return false, fmt.Errorf("update error: %w", err)
+		log.Printf("user-store: rows error %v", err)
+		return fmt.Errorf("rows error: %w", err)
 	}
 
-	if rows == 0 {
-		return false, nil
+	if affected == 0 {
+		return common.UserAlreadyExistsError{}
 	}
 
-	return true, nil
+	return nil
 }
 
 func (us *UserStore) GetUserProfile(ctx context.Context, userID string) (*models.User, error) {
@@ -68,7 +69,7 @@ func (us *UserStore) GetUserProfile(ctx context.Context, userID string) (*models
 	var user models.User
 	if err := row.Scan(&user.ID, &user.Name, &user.Email, &user.USN, &user.MobileNumber, &user.CurrentYear, &user.Department); err != nil {
 		if err == sql.ErrNoRows {
-			return nil, nil
+			return nil, common.UserNotFoundError{}
 		}
 		log.Printf("user-store: row error %v", err)
 		return nil, fmt.Errorf("row error: %w", err)
@@ -77,33 +78,33 @@ func (us *UserStore) GetUserProfile(ctx context.Context, userID string) (*models
 	return &user, nil
 }
 
-func (us *UserStore) UpdateUserProfile(ctx context.Context, userID string, req *dto.UpdateUserProfileRequest) (bool, error) {
+func (us *UserStore) UpdateUserProfile(ctx context.Context, userID string, req *dto.UpdateUserProfileRequest) error {
 	if us == nil || us.db == nil {
-		return false, fmt.Errorf("contest store: db is not initialized")
+		return fmt.Errorf("contest store: db is not initialized")
 	}
 
 	const q = `
 	UPDATE users
-	SET name = $2, usn = $3, mobile_number = $4, current_year = $5, department = $6
+	SET name = $2, mobile_number = $3, department = $4
 	WHERE id = $1
 	`
 
-	res, err := us.db.ExecContext(ctx, q, userID, req.Name, req.USN, req.MobileNumber, req.CurrentYear, req.Department)
+	res, err := us.db.ExecContext(ctx, q, userID, req.Name, req.MobileNumber, req.Department)
 	if err != nil {
 		log.Printf("user-store: update error %v", err)
-		return false, fmt.Errorf("update error: %w", err)
+		return fmt.Errorf("update error: %w", err)
 	}
 
 	// If rows affected is 0, then the user does not exist
-	rows, err := res.RowsAffected()
+	affected, err := res.RowsAffected()
 	if err != nil {
-		log.Printf("user-store: update error %v", err)
-		return false, fmt.Errorf("update error: %w", err)
+		log.Printf("user-store: rows error %v", err)
+		return fmt.Errorf("rows error: %w", err)
 	}
 
-	if rows == 0 {
-		return false, nil
+	if affected == 0 {
+		return common.UserNotFoundError{}
 	}
 
-	return true, nil
+	return nil
 }

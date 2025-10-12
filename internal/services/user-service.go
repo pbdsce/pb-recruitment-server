@@ -20,12 +20,12 @@ func NewUserService(stores *stores.Storage, authClient *auth.Client) *UserServic
 	return &UserService{stores, authClient}
 }
 
-func (us *UserService) CreateUser(ctx context.Context, userID string, req *dto.CreateUserRequest) (bool, error) {
+func (us *UserService) CreateUser(ctx context.Context, userID string, req *dto.CreateUserRequest) error {
 
 	user, err := us.authClient.GetUser(ctx, userID)
 	if err != nil {
 		log.Printf("user-service: error fetching user: %v", err)
-		return false, fmt.Errorf("error fetching user: %v", err)
+		return fmt.Errorf("error fetching user: %v", err)
 	}
 
 	return us.stores.Users.CreateUser(ctx, user, req)
@@ -35,6 +35,6 @@ func (us *UserService) GetUserProfile(ctx context.Context, userID string) (*mode
 	return us.stores.Users.GetUserProfile(ctx, userID)
 }
 
-func (us *UserService) UpdateUserProfile(ctx context.Context, userID string, req *dto.UpdateUserProfileRequest) (bool, error) {
+func (us *UserService) UpdateUserProfile(ctx context.Context, userID string, req *dto.UpdateUserProfileRequest) error {
 	return us.stores.Users.UpdateUserProfile(ctx, userID, req)
 }

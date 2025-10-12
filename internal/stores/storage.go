@@ -15,9 +15,9 @@ type Storage struct {
 		ListContests(context.Context, int) ([]models.Contest, error)
 	}
 	Users interface {
-		CreateUser(context.Context, *auth.UserRecord, *dto.CreateUserRequest) (bool, error)
+		CreateUser(context.Context, *auth.UserRecord, *dto.CreateUserRequest) error
 		GetUserProfile(context.Context, string) (*models.User, error)
-		UpdateUserProfile(context.Context, string, *dto.UpdateUserProfileRequest) (bool, error)
+		UpdateUserProfile(context.Context, string, *dto.UpdateUserProfileRequest) error
 	}
 	Submissions interface {
 		GetSubmissionStatusByID(context.Context, string) (*models.Submission, error)
