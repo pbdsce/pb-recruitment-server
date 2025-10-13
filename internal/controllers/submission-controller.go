@@ -23,7 +23,6 @@ func(sc *SubmissionController) GetSubmissionStatus(ctx echo.Context) error {
 	userID := ctx.Get(common.AUTH_USER_ID).(string)
 
 	sub, err := sc.submissionService.GetSubmissionStatusByID(ctx.Request().Context(), id)
-	
 	if err != nil {
 		if errors.Is(err, common.ErrNotFound) {
             return ctx.NoContent(http.StatusNotFound)
@@ -34,7 +33,7 @@ func(sc *SubmissionController) GetSubmissionStatus(ctx echo.Context) error {
 		})
 	}
 
-	if(sub.UserID != userID) {
+	if sub.UserID != userID {
 		return ctx.NoContent(http.StatusForbidden)
 	}
 

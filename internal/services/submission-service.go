@@ -16,7 +16,6 @@ func NewSubmissionService(stores *stores.Storage) *SubmissionService {
 
 func (ss *SubmissionService) GetSubmissionStatusByID(ctx context.Context, id string) (*models.Submission, error) {
 	sub, err := ss.stores.Submissions.GetSubmissionStatusByID(ctx, id)
-
 	if err != nil {
 		return nil, err
 	}
