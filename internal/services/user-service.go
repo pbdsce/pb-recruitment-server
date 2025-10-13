@@ -12,7 +12,7 @@ import (
 )
 
 type UserService struct {
-	stores        *stores.Storage
+	stores     *stores.Storage
 	authClient *auth.Client
 }
 
@@ -21,7 +21,6 @@ func NewUserService(stores *stores.Storage, authClient *auth.Client) *UserServic
 }
 
 func (us *UserService) CreateUser(ctx context.Context, userID string, req *dto.CreateUserRequest) error {
-
 	user, err := us.authClient.GetUser(ctx, userID)
 	if err != nil {
 		log.Printf("user-service: error fetching user: %v", err)

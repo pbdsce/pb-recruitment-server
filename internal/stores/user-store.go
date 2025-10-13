@@ -47,7 +47,7 @@ func (us *UserStore) CreateUser(ctx context.Context, user *auth.UserRecord, req 
 	}
 
 	if affected == 0 {
-		return common.UserAlreadyExistsError{}
+		return common.UserAlreadyExistsError
 	}
 
 	return nil
@@ -69,7 +69,7 @@ func (us *UserStore) GetUserProfile(ctx context.Context, userID string) (*models
 	var user models.User
 	if err := row.Scan(&user.ID, &user.Name, &user.Email, &user.USN, &user.MobileNumber, &user.CurrentYear, &user.Department); err != nil {
 		if err == sql.ErrNoRows {
-			return nil, common.UserNotFoundError{}
+			return nil, common.UserNotFoundError
 		}
 		log.Printf("user-store: row error %v", err)
 		return nil, fmt.Errorf("row error: %w", err)
@@ -103,7 +103,7 @@ func (us *UserStore) UpdateUserProfile(ctx context.Context, userID string, req *
 	}
 
 	if affected == 0 {
-		return common.UserNotFoundError{}
+		return common.UserNotFoundError
 	}
 
 	return nil
