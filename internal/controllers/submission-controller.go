@@ -26,7 +26,7 @@ func(sc *SubmissionController) GetSubmissionStatus(ctx echo.Context) error {
 	
 	if err != nil {
 		if errors.Is(err, common.ErrNotFound) {
-            return echo.NewHTTPError(http.StatusNotFound, "Submission not found")
+            return echo.NoContent(http.StatusNotFound)
         }
 
 		return ctx.JSON(http.StatusInternalServerError, map[string]string{
@@ -35,7 +35,7 @@ func(sc *SubmissionController) GetSubmissionStatus(ctx echo.Context) error {
 	}
 
 	if(sub.UserID != userID) {
-		return echo.NewHTTPError(http.StatusForbidden, "Access denied to this submission")
+		return echo.NoContent(http.StatusForbidden)
 	}
 
 	return ctx.JSON(http.StatusOK, map[string]string{
