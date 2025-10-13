@@ -15,7 +15,7 @@ type Storage struct {
 		// todo: add user store
 	}
 	Submissions interface {
-		// todo: add submission store
+		GetSubmissionStatusByID(context.Context, string) (*models.Submission, error)
 	}
 	Rankings interface {
 		// todo: add ranking store

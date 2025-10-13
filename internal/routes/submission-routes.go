@@ -2,7 +2,7 @@ package routes
 
 import (
 	"app/internal/controllers"
-
+	"app/internal/middleware"
 	"firebase.google.com/go/v4/auth"
 	"github.com/labstack/echo/v4"
 )
@@ -14,10 +14,10 @@ func AddSubmissionRoutes(
 ) {
 	// // Get the status of a specific submission
 	// // The authenticated user can only get the status of their own submissions
-	// e.GET("/submission/:id/status",
-	// 	submissionController.GetSubmissionStatus,
-	// 	middleware.RequireFirebaseAuth(authClient),
-	// )
+	e.GET("/submission/:id/status",
+		submissionController.GetSubmissionStatus,
+		middleware.RequireFirebaseAuth(authClient),
+	)
 
 	// // Get details of a specific submission (which test case passed/failed, runtime, memory, etc.)
 	// // The authenticated user can only get the details of their own submissions
