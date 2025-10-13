@@ -3,29 +3,37 @@ package services
 import (
 	"app/internal/models"
 	"app/internal/models/dto"
+	"app/internal/stores"
+	"context"
+	"fmt"
+	"log"
+
+	"firebase.google.com/go/v4/auth"
 )
 
 type UserService struct {
+	stores     *stores.Storage
+	authClient *auth.Client
 }
 
-func NewUserService() *UserService {
-	return &UserService{}
+func NewUserService(stores *stores.Storage, authClient *auth.Client) *UserService {
+	return &UserService{stores, authClient}
 }
 
-func (us *UserService) GetUserProfile(userID string) (*models.User, error) {
-	// Fetch user profile logic would go here
-	return &models.User{
-		ID:           userID,
-		Name:         "John Doe",
-		Email:        "john.doe@example.com",
-		USN:          "USN123456",
-		MobileNumber: "+911234567890",
-		JoiningYear:  2023,
-		Department:   "Computer Science",
-	}, nil
+func (us *UserService) CreateUser(ctx context.Context, userID string, req *dto.CreateUserRequest) error {
+	user, err := us.authClient.GetUser(ctx, userID)
+	if err != nil {
+		log.Printf("user-service: error fetching user: %v", err)
+		return fmt.Errorf("error fetching user: %v", err)
+	}
+
+	return us.stores.Users.CreateUser(ctx, user, req)
 }
 
-func (us *UserService) UpdateUserProfile(userID string, req *dto.UpdateUserProfileRequest) error {
-	// Update user profile logic would go here
-	return nil
+func (us *UserService) GetUserProfile(ctx context.Context, userID string) (*models.User, error) {
+	return us.stores.Users.GetUserProfile(ctx, userID)
+}
+
+func (us *UserService) UpdateUserProfile(ctx context.Context, userID string, req *dto.UpdateUserProfileRequest) error {
+	return us.stores.Users.UpdateUserProfile(ctx, userID, req)
 }
