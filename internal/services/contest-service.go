@@ -18,7 +18,6 @@ func NewContestService(stores *stores.Storage) *ContestService {
 }
 
 func (cs *ContestService) ModifyRegistration(ctx context.Context, contestID string, userID string, action string) error {
-	// Validate contest exists
 	contest, err := cs.stores.Contests.GetContest(ctx, contestID)
 	if err != nil {
 		return fmt.Errorf("failed to get contest: %w", err)
@@ -27,13 +26,11 @@ func (cs *ContestService) ModifyRegistration(ctx context.Context, contestID stri
 		return fmt.Errorf("contest not found")
 	}
 
-	// Check if contest is in registration period
 	now := time.Now().Unix()
 	if now < contest.RegistrationStartTime || now >= contest.RegistrationEndTime {
 		return fmt.Errorf("contest registration is not currently open")
 	}
 
-	// Check if user is already registered
 	isRegistered, err := cs.stores.Contests.IsUserRegistered(ctx, contestID, userID)
 	if err != nil {
 		return fmt.Errorf("failed to check registration status: %w", err)
@@ -58,18 +55,15 @@ func (cs *ContestService) ModifyRegistration(ctx context.Context, contestID stri
 }
 
 func (cs *ContestService) ListContests(ctx context.Context, page int) ([]models.Contest, error) {
-	// Validate page parameter
 	if page < 0 {
 		page = 0
 	}
 
-	// Get contests from store
 	contests, err := cs.stores.Contests.ListContests(ctx, page)
 	if err != nil {
 		return nil, fmt.Errorf("failed to fetch contests: %w", err)
 	}
 
-	// Add status to each contest
 	for i := range contests {
 		contests[i].Status = cs.getContestStatus(contests[i])
 	}
@@ -77,7 +71,6 @@ func (cs *ContestService) ListContests(ctx context.Context, page int) ([]models.
 	return contests, nil
 }
 
-// getContestStatus determines the current status of a contest based on timestamps
 func (cs *ContestService) getContestStatus(contest models.Contest) string {
 	now := time.Now().Unix()
 
@@ -95,24 +88,21 @@ func (cs *ContestService) getContestStatus(contest models.Contest) string {
 }
 
 func (cs *ContestService) GetContest(ctx context.Context, contestID string, userID string, isAuthenticated bool) (*dto.GetContestResponse, error) {
-	// Get contest details
 	contest, err := cs.stores.Contests.GetContest(ctx, contestID)
 	if err != nil {
 		return nil, err
 	}
 
 	if contest == nil {
-		return nil, nil // Contest not found
+		return nil, nil 
 	}
 
-	// Add status to contest
 	contest.Status = cs.getContestStatus(*contest)
 
 	response := &dto.GetContestResponse{
 		Contest: *contest,
 	}
 
-	// If user is authenticated, check if they're registered
 	if isAuthenticated && userID != "" {
 		isRegistered, err := cs.stores.Contests.IsUserRegistered(ctx, contestID, userID)
 		if err != nil {
@@ -125,7 +115,6 @@ func (cs *ContestService) GetContest(ctx context.Context, contestID string, user
 }
 
 func (cs *ContestService) GetContestProblemsList(ctx context.Context, contestID string, userID string) (*dto.GetContestProblemsResponse, error) {
-	// Validate contest exists
 	contest, err := cs.stores.Contests.GetContest(ctx, contestID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get contest: %w", err)
@@ -134,7 +123,6 @@ func (cs *ContestService) GetContestProblemsList(ctx context.Context, contestID 
 		return nil, fmt.Errorf("contest not found")
 	}
 
-	// Check if user is registered for the contest
 	isRegistered, err := cs.stores.Contests.IsUserRegistered(ctx, contestID, userID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to check registration status: %w", err)
@@ -143,13 +131,11 @@ func (cs *ContestService) GetContestProblemsList(ctx context.Context, contestID 
 		return nil, fmt.Errorf("user is not registered for this contest")
 	}
 
-	// Get problems from store
 	problems, err := cs.stores.Problems.GetContestProblems(ctx, contestID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get contest problems: %w", err)
 	}
 
-	// Convert to ProblemOverview and add status
 	problemOverviews := make([]dto.ProblemOverview, len(problems))
 	for i, problem := range problems {
 		status := "not_attempted"
@@ -171,7 +157,6 @@ func (cs *ContestService) GetContestProblemsList(ctx context.Context, contestID 
 }
 
 func (cs *ContestService) GetContestProblemStatement(ctx context.Context, contestID string, problemID string, userID string) (*dto.GetProblemStatementResponse, error) {
-	// Validate contest exists
 	contest, err := cs.stores.Contests.GetContest(ctx, contestID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get contest: %w", err)
@@ -180,7 +165,6 @@ func (cs *ContestService) GetContestProblemStatement(ctx context.Context, contes
 		return nil, fmt.Errorf("contest not found")
 	}
 
-	// Check if user is registered for the contest
 	isRegistered, err := cs.stores.Contests.IsUserRegistered(ctx, contestID, userID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to check registration status: %w", err)
@@ -189,16 +173,14 @@ func (cs *ContestService) GetContestProblemStatement(ctx context.Context, contes
 		return nil, fmt.Errorf("user is not registered for this contest")
 	}
 
-	// Get problem from store
 	problem, err := cs.stores.Problems.GetProblem(ctx, problemID, contestID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get problem: %w", err)
 	}
 	if problem == nil {
-		return nil, nil // Problem not found
+		return nil, nil 
 	}
 
-	// Convert to GetProblemStatementResponse
 	response := &dto.GetProblemStatementResponse{
 		ProblemID:   problem.ID,
 		ContestID:   problem.ContestID,
