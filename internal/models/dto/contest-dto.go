@@ -11,3 +11,8 @@ type GetContestResponse struct {
 type ModifyRegistrationRequest struct {
 	Action string `json:"action" validate:"required,oneof=register unregister"`
 }
+
+type GetContestProblemsResponse struct {
+	ContestID string            `json:"contest_id"`
+	Problems  []ProblemOverview `json:"problems"`
+}
