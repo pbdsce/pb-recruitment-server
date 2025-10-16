@@ -21,3 +21,11 @@ func (ss *SubmissionService) GetSubmissionStatusByID(ctx context.Context, id str
 	}
 	return sub, nil
 }
+
+func (ss *SubmissionService) GetSubmissionDetailsByID(ctx context.Context, id string) (*models.Submission, error) {
+	sub, err := ss.stores.Submissions.GetSubmissionDetailsByID(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	return sub, nil
+}

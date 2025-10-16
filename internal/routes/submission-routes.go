@@ -21,10 +21,10 @@ func AddSubmissionRoutes(
 
 	// // Get details of a specific submission (which test case passed/failed, runtime, memory, etc.)
 	// // The authenticated user can only get the details of their own submissions
-	// e.GET("/submission/:id/details",
-	// 	submissionController.GetSubmissionDetails,
-	// 	middleware.RequireFirebaseAuth(authClient),
-	// )
+	e.GET("/submission/:id/details",
+		submissionController.GetSubmissionDetails,
+		middleware.RequireFirebaseAuth(authClient),
+	)
 
 	// // List all submissions of the authenticated user for a specific Code problem
 	// // Paginate, page=<page> and 20 entries per page
