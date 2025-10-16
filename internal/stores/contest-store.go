@@ -6,6 +6,7 @@ import (
 	"database/sql"
 	"fmt"
 	"log"
+	"time"
 )
 
 type ContestStore struct {
@@ -100,4 +101,35 @@ func (s *ContestStore) IsUserRegistered(ctx context.Context, contestID, userID s
 	}
 
 	return exists, nil
+}
+
+func (s *ContestStore) RegisterUser(ctx context.Context, contestID, userID string) error {
+
+	now := time.Now().Unix()
+	const q = `
+		INSERT INTO contest_registrations (contest_id, user_id, registered_at)
+		VALUES ($1, $2, $3)
+		ON CONFLICT (contest_id, user_id) DO NOTHING
+	`
+
+	_, err := s.db.ExecContext(ctx, q, contestID, userID, now)
+	if err != nil {
+		log.Printf("contest-store: register user failed: %v", err)
+		return fmt.Errorf("register user: %w", err)
+	}
+
+	return nil
+}
+
+func (s *ContestStore) UnregisterUser(ctx context.Context, contestID, userID string) error {
+
+	const q = `DELETE FROM contest_registrations WHERE contest_id = $1 AND user_id = $2`
+
+	_, err := s.db.ExecContext(ctx, q, contestID, userID)
+	if err != nil {
+		log.Printf("contest-store: unregister user failed: %v", err)
+		return fmt.Errorf("unregister user: %w", err)
+	}
+
+	return nil
 }

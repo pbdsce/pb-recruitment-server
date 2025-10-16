@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"app/internal/common"
+	"app/internal/models/dto"
 	"app/internal/services"
 	"net/http"
 	"strconv"
@@ -17,6 +18,20 @@ func NewContestController(contestService *services.ContestService) *ContestContr
 	return &ContestController{
 		contestService: contestService,
 	}
+}
+
+func (cc *ContestController) ModifyRegistration(ctx echo.Context) error {
+	contestID := ctx.Param("id")
+	userID := ctx.Get(common.AUTH_USER_ID).(string)
+	reqBody := ctx.Get(common.VALIDATED_REQUEST_BODY).(*dto.ModifyRegistrationRequest)
+
+	if err := cc.contestService.ModifyRegistration(ctx.Request().Context(), contestID, userID, reqBody.Action); err != nil {
+		return ctx.JSON(http.StatusInternalServerError, map[string]string{
+			"error": "failed to modify registration",
+		})
+	}
+
+	return ctx.NoContent(http.StatusOK)
 }
 
 func (cc *ContestController) ListContests(ctx echo.Context) error {
