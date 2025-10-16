@@ -2,6 +2,7 @@ package services
 
 import (
 	"app/internal/models"
+	"app/internal/models/dto"
 	"app/internal/stores"
 	"context"
 	"fmt"
@@ -47,4 +48,31 @@ func (cs *ContestService) getContestStatus(contest models.Contest) string {
 	} else {
 		return "ended"
 	}
+}
+
+func (cs *ContestService) GetContest(ctx context.Context, contestID string, userID string, isAuthenticated bool) (*dto.GetContestResponse, error) {
+	contest, err := cs.stores.Contests.GetContest(ctx, contestID)
+	if err != nil {
+		return nil, err
+	}
+
+	if contest == nil {
+		return nil, nil
+	}
+
+	contest.Status = cs.getContestStatus(*contest)
+
+	response := &dto.GetContestResponse{
+		Contest: *contest,
+	}
+
+	if isAuthenticated && userID != "" {
+		isRegistered, err := cs.stores.Contests.IsUserRegistered(ctx, contestID, userID)
+		if err != nil {
+			return nil, err
+		}
+		response.IsRegistered = isRegistered
+	}
+
+	return response, nil
 }
