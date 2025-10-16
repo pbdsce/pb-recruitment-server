@@ -7,4 +7,5 @@ type Contest struct {
 	RegistrationEndTime   int64  `json:"registration_end_time"`   // Unix timestamp
 	StartTime             int64  `json:"start_time"`              // Unix timestamp
 	EndTime               int64  `json:"end_time"`                // Unix timestamp
+	Status                string `json:"status"`                  // "upcoming", "registration_open", "registration_closed", "active", "ended"
 }

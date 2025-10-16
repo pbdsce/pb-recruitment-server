@@ -36,7 +36,7 @@ func (cc *ContestController) ListContests(ctx echo.Context) error {
 	pageStr := ctx.QueryParam("page")
 
 	page, err := strconv.Atoi(pageStr)
-	if err != nil {
+	if err != nil || page < 0 {
 		page = 0
 	}
 
