@@ -41,3 +41,24 @@ func(sc *SubmissionController) GetSubmissionStatus(ctx echo.Context) error {
 		"status": string(sub.Status),
 	})
 }
+
+func(sc *SubmissionController) GetSubmissionDetails(ctx echo.Context) error {
+	id := ctx.Param("id")
+	userID := ctx.Get(common.AUTH_USER_ID).(string)
+
+	sub, err := sc.submissionService.GetSubmissionDetailsByID(ctx.Request().Context(), id)
+	if err != nil {
+		if errors.Is(err, common.ErrNotFound) {
+			return ctx.NoContent(http.StatusNotFound)
+		}
+		return ctx.JSON(http.StatusInternalServerError, map[string]string{
+			"error": "failed to get submission details",
+		})
+	}
+
+	if sub.UserID != userID {
+		return ctx.NoContent(http.StatusForbidden)
+	}
+
+	return ctx.JSON(http.StatusOK, sub)
+}
