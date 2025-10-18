@@ -30,6 +30,8 @@ type Storage struct {
 		// todo: add ranking store
 	}
 	Problems interface {
+		GetContestProblems(context.Context, string) ([]models.Problem, error)
+		GetProblem(context.Context, string, string) (*models.Problem, error)
 	}
 }
 
