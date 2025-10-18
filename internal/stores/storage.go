@@ -15,6 +15,8 @@ type Storage struct {
 		ListContests(context.Context, int) ([]models.Contest, error)
 		GetContest(context.Context, string) (*models.Contest, error)
 		IsUserRegistered(context.Context, string, string) (bool, error)
+		RegisterUser(context.Context, string, string) error
+		UnregisterUser(context.Context, string, string) error
 	}
 	Users interface {
 		CreateUser(context.Context, *auth.UserRecord, *dto.CreateUserRequest) error

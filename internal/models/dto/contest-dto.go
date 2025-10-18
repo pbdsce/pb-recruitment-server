@@ -5,5 +5,9 @@ import "app/internal/models"
 // GetContestResponse represents the response for getting contest details
 type GetContestResponse struct {
 	models.Contest
-	IsRegistered bool `json:"is_registered"` // Only included when user is authenticated
+	IsRegistered bool `json:"is_registered"`
+}
+
+type ModifyRegistrationRequest struct {
+	Action string `json:"action" validate:"required,oneof=register unregister"`
 }

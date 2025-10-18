@@ -17,6 +17,43 @@ func NewContestService(stores *stores.Storage) *ContestService {
 	return &ContestService{stores: stores}
 }
 
+func (cs *ContestService) ModifyRegistration(ctx context.Context, contestID string, userID string, action string) error {
+	contest, err := cs.stores.Contests.GetContest(ctx, contestID)
+	if err != nil {
+		return fmt.Errorf("failed to get contest: %w", err)
+	}
+	if contest == nil {
+		return fmt.Errorf("contest not found")
+	}
+
+	now := time.Now().Unix()
+	if now < contest.RegistrationStartTime || now >= contest.RegistrationEndTime {
+		return fmt.Errorf("contest registration is not currently open")
+	}
+
+	isRegistered, err := cs.stores.Contests.IsUserRegistered(ctx, contestID, userID)
+	if err != nil {
+		return fmt.Errorf("failed to check registration status: %w", err)
+	}
+
+	switch action {
+	case "register":
+		if isRegistered {
+			return fmt.Errorf("user is already registered for this contest")
+		}
+		return cs.stores.Contests.RegisterUser(ctx, contestID, userID)
+
+	case "unregister":
+		if !isRegistered {
+			return fmt.Errorf("user is not registered for this contest")
+		}
+		return cs.stores.Contests.UnregisterUser(ctx, contestID, userID)
+
+	default:
+		return fmt.Errorf("invalid action: %s", action)
+	}
+}
+
 func (cs *ContestService) ListContests(ctx context.Context, page int) ([]models.Contest, error) {
 	if page < 0 {
 		page = 0
