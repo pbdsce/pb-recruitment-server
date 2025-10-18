@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"log"
 	"github.com/lib/pq"
+	"encoding/json"
 )
 
 type SubmissionStore struct {
@@ -67,7 +68,7 @@ func (s *SubmissionStore) GetSubmissionDetailsByID(ctx context.Context, id strin
 		&sub.Type,
 		&sub.Language,
 		&sub.Code,
-		&pq.Array(&sub.Option),
+		pq.Array(&sub.Option),
 		&sub.Status,
 		&sub.CreatedAt,
 		&sub.Runtime,
