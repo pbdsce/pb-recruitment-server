@@ -20,10 +20,13 @@ const (
 )
 
 type TestCaseResult struct {
-	TestCaseID string `json:"test_case_id"`
-	Status	   string `json:"status"`   
-	Runtime    int64  `json:"runtime"` 
-	Memory     int64  `json:"memory"`  
+	ID           string `json:"id"`
+	SubmissionID string `json:"submission_id"`
+	TestCaseID   string `json:"test_case_id"`
+	Status	     string `json:"status"`   
+	Runtime      int64  `json:"runtime"` 
+	Memory       int64  `json:"memory"`
+	CreatedAt    int64  `json:"created_at"` 
 }
 
 type Submission struct {

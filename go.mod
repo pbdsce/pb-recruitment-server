@@ -5,7 +5,6 @@ go 1.25.1
 require (
 	github.com/aws/aws-sdk-go-v2 v1.39.2
 	github.com/jackc/pgx/v5 v5.7.6
-	github.com/lib/pq v1.10.9
 )
 
 require (
