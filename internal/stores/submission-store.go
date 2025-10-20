@@ -7,6 +7,8 @@ import (
 	"database/sql"
 	"fmt"
 	"log"
+	"strconv"
+	"strings"
 )
 
 type SubmissionStore struct {
@@ -80,9 +82,22 @@ func (s *SubmissionStore) GetSubmissionDetailsByID(ctx context.Context, id strin
 		return nil, fmt.Errorf("scan submission: %w", err)
 	}
 
-	sub.Option = []int{} 
+	sub.Option = []int{}
 	if rawChoices.Valid && rawChoices.String != "" && rawChoices.String != "{}" {
-		log.Printf("submission-store: Non-empty choices field detected (%s) but skipping array parsing for simplicity.", rawChoices.String)
+		choiceStr := strings.TrimSpace(strings.Trim(rawChoices.String, "{}"))
+
+		if choiceStr != "" {
+			parts := strings.Split(choiceStr, ",")
+
+			for _, part := range parts {
+				val, err := strconv.Atoi(strings.TrimSpace(part))
+				if err != nil {
+					log.Printf("submission-store: failed to parse choice value '%s': %v", part, err)
+					continue
+				}
+				sub.Option = append(sub.Option, val)
+			}
+		}
 	}
 
 	testCaseResults, err := s.GetTestCaseResultsBySubmissionID(ctx, id)
