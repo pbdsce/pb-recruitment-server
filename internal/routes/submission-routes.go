@@ -5,6 +5,7 @@ import (
 	"app/internal/middleware"
 	"firebase.google.com/go/v4/auth"
 	"github.com/labstack/echo/v4"
+	"app/internal/models/dto"
 )
 
 func AddSubmissionRoutes(
@@ -29,11 +30,11 @@ func AddSubmissionRoutes(
 	// // List all submissions of the authenticated user for a specific Code problem
 	// // Paginate, page=<page> and 20 entries per page
 	// // Add a REQUIRED query parameter "problem_id" to filter submissions by problem
-	// e.GET("/submission/list",
-	// 	submissionController.ListUserSubmissions,
-	// 	middleware.RequireFirebaseAuth(authClient),
-	// 	middleware.ValidateRequest(new(dto.ListProblemSubmissionsRequest)),
-	// )
+	e.GET("/submission/list",
+		submissionController.ListUserSubmissions,
+		middleware.RequireFirebaseAuth(authClient),
+		middleware.ValidateRequest(new(dto.ListProblemSubmissionsRequest)),
+	)
 
 	// // Submit a solution to a problem in a contest
 	// // The authenticated user can only submit solutions to contests they are registered in

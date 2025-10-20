@@ -152,3 +152,56 @@ func (s *SubmissionStore) GetTestCaseResultsBySubmissionID(ctx context.Context, 
 
 	return results, nil
 }
+
+func (s *SubmissionStore) ListUserSubmissionsByProblemID(ctx context.Context, userID, problemID string, page int) ([]models.Submission, error) {
+	if s == nil || s.db == nil {
+		return nil, fmt.Errorf("submission store: db is not initialized")
+	}
+
+	const pageSize = 20
+	page = max(0, page)
+	offset := page * pageSize
+
+	const q = `
+		SELECT id, contest_id, problem_id, type, language, status, created_at, runtime, memory
+		FROM submissions
+		WHERE user_id = $1 AND problem_id = $2
+		ORDER BY created_at DESC
+		LIMIT $3 OFFSET $4
+	`
+	
+	rows, err := s.db.QueryContext(ctx, q, userID, problemID, pageSize, offset)
+	if err != nil {
+		log.Printf("submission-store: query failed: %v", err)
+		return nil, fmt.Errorf("query user submissions: %w", err)
+	}
+	defer rows.Close()
+
+	submissions := make([]models.Submission, 0)
+	for rows.Next() {
+		var sub models.Submission
+
+		if err := rows.Scan(
+			&sub.ID,
+			&sub.ContestID,
+			&sub.ProblemID,
+			&sub.Type,
+			&sub.Language,
+			&sub.Status,
+			&sub.CreatedAt,
+			&sub.Runtime,
+			&sub.Memory,
+		); err != nil {
+			log.Printf("submission-store: failed to scan submission row: %v", err)
+			continue
+		}
+		submissions = append(submissions, sub)
+	}
+
+	if err := rows.Err(); err != nil {
+		log.Printf("submission-store: rows error: %v", err)
+		return nil, fmt.Errorf("row iteration error: %w", err)
+	}
+
+	return submissions, nil
+}

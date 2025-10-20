@@ -14,6 +14,11 @@ type SubmitSubmissionResponse struct {
 	SubmissionID string `json:"submission_id"`
 }
 
+type ListProblemSubmissionsRequest struct {
+	ProblemID string `query:"problem_id" validate:"required"`
+	Page      int    `query:"page" validate:"min=0"`
+}
+
 type ListProblemSubmissionsResponse struct {
 	Submissions []models.Submission `json:"submissions"`
 }

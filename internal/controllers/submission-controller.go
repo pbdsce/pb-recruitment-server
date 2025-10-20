@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"github.com/labstack/echo/v4"
 	"errors"
+	"app/internal/models/dto"
 )
 
 type SubmissionController struct {
@@ -62,3 +63,25 @@ func(sc *SubmissionController) GetSubmissionDetails(ctx echo.Context) error {
 
 	return ctx.JSON(http.StatusOK, sub)
 }
+
+func(sc *SubmissionController) ListUserSubmissions(ctx echo.Context) error {
+	userID := ctx.Get(common.AUTH_USER_ID).(string)
+
+	req, ok := ctx.Get(common.VALIDATED_REQUEST_BODY).(*dto.ListProblemSubmissionsRequest)
+	if !ok {
+		return ctx.JSON(http.StatusInternalServerError, map[string]string{
+			"error": "Internal error: Request DTO not found in context",
+		})
+	}
+
+	submissions, err := sc.submissionService.ListUserSubmissionsByProblemID(ctx.Request().Context(), userID, req.ProblemID, req.Page)
+	if err != nil {
+		return ctx.JSON(http.StatusInternalServerError, map[string]string{
+			"error": "failed to list user submissions",
+		})
+	}
+
+	return ctx.JSON(http.StatusOK, dto.ListProblemSubmissionsResponse{
+		Submissions: submissions,
+	})
+}	

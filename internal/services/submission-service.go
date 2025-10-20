@@ -29,3 +29,11 @@ func (ss *SubmissionService) GetSubmissionDetailsByID(ctx context.Context, id st
 	}
 	return sub, nil
 }
+
+func (ss *SubmissionService) ListUserSubmissionsByProblemID(ctx context.Context, userID, problemID string, page int) ([]models.Submission, error) {
+	sub, err := ss.stores.Submissions.ListUserSubmissionsByProblemID(ctx, userID, problemID, page)
+	if err != nil {
+		return nil, err
+	}
+	return sub, nil
+}
