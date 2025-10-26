@@ -45,7 +45,7 @@ func NewFirebaseAuth() *auth.Client {
 	// Initialize Firebase with service account
 	serviceAccountPath := os.Getenv("FIREBASE_SERVICE_ACCOUNT_PATH")
 	var opt option.ClientOption
-	if os.Getenv("STAGE") == "prod" {
+	if os.Getenv("STAGE") == "production" {
 		opt = option.WithCredentialsJSON([]byte(getFirebaseCredentialsForProd()))
 	} else {
 		opt = option.WithCredentialsFile(serviceAccountPath)
