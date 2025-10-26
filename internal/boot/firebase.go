@@ -14,8 +14,8 @@ import (
 )
 
 func getFirebaseCredentialsForProd() string {
-	secretName := "<aws-secret-manager-secret-name>"
-	region := "us-east-1"
+	secretName := os.Getenv("FIREBASE_SERVICE_ACCOUNT_SECRET")
+	region := os.Getenv("AWS_REGION")
 
 	config, err := config.LoadDefaultConfig(context.TODO(), config.WithRegion(region))
 	if err != nil {
