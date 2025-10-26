@@ -41,9 +41,9 @@ func AddSubmissionRoutes(
 	// // The request body should contain the contest ID, problem ID, language, and code
 	// // For MCQ type questions, the request body should contain the selected option(s)
 	// // The response should contain the submission ID
-	// e.POST("/submission/submit",
-	// 	submissionController.SubmitSolution,
-	// 	middleware.RequireFirebaseAuth(authClient),
-	// 	middleware.ValidateRequest(new(dto.SubmitSubmissionRequest)),
-	// )
+	e.POST("/submission/submit",
+		submissionController.SubmitSolution,
+		middleware.RequireFirebaseAuth(authClient),
+		middleware.ValidateRequest(new(dto.SubmitSubmissionRequest)),
+	)
 }

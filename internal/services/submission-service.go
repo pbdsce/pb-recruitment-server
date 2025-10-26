@@ -3,6 +3,7 @@ package services
 import (
 	"app/internal/models"
 	"app/internal/stores"
+	"app/internal/models/dto"
 	"context"
 )
 
@@ -36,4 +37,22 @@ func (ss *SubmissionService) ListUserSubmissionsByProblemID(ctx context.Context,
 		return nil, err
 	}
 	return sub, nil
+}
+
+func (ss *SubmissionService) CreateSubmission(ctx context.Context, userID string, submissionType models.SubmissionType, req *dto.SubmitSubmissionRequest) (string, error) {
+	sub := &models.Submission{
+		UserID:    userID,
+		ContestID: req.ContestID,
+		ProblemID: req.ProblemID,
+		Type:      submissionType,
+		Status:    models.Pending,
+		Language:  req.Language,
+		Code:      req.Code,
+		Option:    req.Option,
+	}
+	submissionID, err := ss.stores.Submissions.CreateSubmission(ctx, sub)
+	if err != nil {
+		return "", err
+	}
+	return submissionID, nil	
 }

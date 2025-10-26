@@ -5,7 +5,6 @@ import (
 	"app/internal/models/dto"
 	"context"
 	"database/sql"
-
 	"firebase.google.com/go/v4/auth"
 )
 
@@ -24,6 +23,7 @@ type Storage struct {
 		GetSubmissionDetailsByID(context.Context, string) (*models.Submission, error)
 		GetTestCaseResultsBySubmissionID(context.Context, string) ([]models.TestCaseResult, error)
 		ListUserSubmissionsByProblemID(context.Context, string, string, int) ([]models.Submission, error)
+		CreateSubmission(context.Context, *models.Submission) (string, error)
 	}
 	Rankings interface {
 		// todo: add ranking store
