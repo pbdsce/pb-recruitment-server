@@ -16,4 +16,6 @@ var (
 	USNYearImmutableError         = errors.New("USN and Year cannot be changed")
 	ContestNotFoundError          = errors.New("contest not found")
 	FetchContestFailedError       = errors.New("failed to fetch contest")
+	ContestRegistrationClosed     = errors.New("contest registration is closed")
+	InvalidYear                   = errors.New("invalid year")
 )
