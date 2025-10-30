@@ -1,11 +1,14 @@
 package stores
 
 import (
+	"app/internal/common"
 	"app/internal/models"
+	"app/internal/models/dto"
 	"context"
 	"database/sql"
 	"fmt"
 	"log"
+	"time"
 )
 
 type ContestStore struct {
@@ -59,4 +62,98 @@ func (s *ContestStore) ListContests(ctx context.Context, page int) ([]models.Con
 	}
 
 	return contests, nil
+}
+
+func (s *ContestStore) IsRegistered(ctx context.Context, contestID string, userID string) (bool, error) {
+	const q = `
+		SELECT EXISTS (
+			SELECT 1
+			FROM contest_registrations
+			WHERE contest_id = $1 AND user_id = $2
+		)
+	`
+
+	var exists bool
+	err := s.db.QueryRowContext(ctx, q, contestID, userID).Scan(&exists)
+	if err != nil {
+		log.Printf("contest-store: query failed: %v", err)
+		return false, fmt.Errorf("query contest registration: %w", err)
+	}
+
+	return exists, nil
+}
+
+func (s *ContestStore) GetContest(ctx context.Context, contestID string) (*dto.GetContestResponse, error) {
+	const q = `
+		SELECT id, name, registration_start_time, registration_end_time, start_time, end_time, eligible_to
+		FROM contests
+		WHERE id = $1
+	`
+
+	var c dto.GetContestResponse
+	err := s.db.QueryRowContext(ctx, q, contestID).Scan(
+		&c.ID, &c.Name, &c.RegistrationStartTime, &c.RegistrationEndTime, &c.StartTime, &c.EndTime, &c.EligibleTo,
+	)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, common.ContestNotFoundError
+		}
+		log.Printf("contest-store: query failed: %v", err)
+		return nil, fmt.Errorf("query contest: %w", err)
+	}
+
+	return &c, nil
+}
+
+func (s *ContestStore) RegisterUser(ctx context.Context, contestID string, userID string) error {
+	const q = `
+		INSERT INTO contest_registrations (contest_id, user_id, registered_at)
+		VALUES ($1, $2, $3)
+		ON CONFLICT (contest_id, user_id) DO NOTHING
+		`
+
+	res, err := s.db.ExecContext(ctx, q, contestID, userID, time.Now().Unix())
+	if err != nil {
+		log.Printf("contest-store: query failed: %v", err)
+		return fmt.Errorf("query contest registration: %w", err)
+	}
+
+	// If rows affected is 0, then the user already registered
+	affected, err := res.RowsAffected()
+	if err != nil {
+		log.Printf("user-store: rows error %v", err)
+		return fmt.Errorf("rows error: %w", err)
+	}
+
+	if affected == 0 {
+		return common.UserAlreadyExistsError
+	}
+
+	return nil
+}
+
+func (s *ContestStore) UnregisterUser(ctx context.Context, contestID string, userID string) error {
+	const q = `
+		DELETE FROM contest_registrations
+		WHERE contest_id = $1 AND user_id = $2
+		`
+
+	res, err := s.db.ExecContext(ctx, q, contestID, userID)
+	if err != nil {
+		log.Printf("contest-store: query failed: %v", err)
+		return fmt.Errorf("query contest registration: %w", err)
+	}
+
+	// If rows affected is 0, then the user never registered
+	affected, err := res.RowsAffected()
+	if err != nil {
+		log.Printf("user-store: rows error %v", err)
+		return fmt.Errorf("rows error: %w", err)
+	}
+
+	if affected == 0 {
+		return common.UserNotFoundError
+	}
+
+	return nil
 }
