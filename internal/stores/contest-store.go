@@ -1,7 +1,9 @@
 package stores
 
 import (
+	"app/internal/common"
 	"app/internal/models"
+	"app/internal/models/dto"
 	"context"
 	"database/sql"
 	"fmt"
@@ -59,4 +61,45 @@ func (s *ContestStore) ListContests(ctx context.Context, page int) ([]models.Con
 	}
 
 	return contests, nil
+}
+
+func (s *ContestStore) IsRegistered(ctx context.Context, contestID string, userID string) (bool, error) {
+	const q = `
+		SELECT EXISTS (
+			SELECT 1
+			FROM contest_registrations
+			WHERE contest_id = $1 AND user_id = $2
+		)
+	`
+
+	var exists bool
+	err := s.db.QueryRowContext(ctx, q, contestID, userID).Scan(&exists)
+	if err != nil {
+		log.Printf("contest-store: query failed: %v", err)
+		return false, fmt.Errorf("query contest registration: %w", err)
+	}
+
+	return exists, nil
+}
+
+func (s *ContestStore) GetContest(ctx context.Context, contestID string) (*dto.GetContestResponse, error) {
+	const q = `
+		SELECT id, name, registration_start_time, registration_end_time, start_time, end_time, eligible_to
+		FROM contests
+		WHERE id = $1
+	`
+
+	var c dto.GetContestResponse
+	err := s.db.QueryRowContext(ctx, q, contestID).Scan(
+		&c.ID, &c.Name, &c.RegistrationStartTime, &c.RegistrationEndTime, &c.StartTime, &c.EndTime, &c.EligibleTo,
+	)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, common.ContestNotFoundError
+		}
+		log.Printf("contest-store: query failed: %v", err)
+		return nil, fmt.Errorf("query contest: %w", err)
+	}
+
+	return &c, nil
 }
