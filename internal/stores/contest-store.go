@@ -28,7 +28,7 @@ func (s *ContestStore) ListContests(ctx context.Context, page int) ([]models.Con
 	offset := page * pageSize
 
 	const q = `
-		SELECT id, name, registration_start_time, registration_end_time, start_time, end_time
+		SELECT id, name, registration_start_time, registration_end_time, start_time, end_time, eligible_to
 		FROM contests
 		ORDER BY start_time DESC
 		LIMIT $1 OFFSET $2
@@ -45,7 +45,7 @@ func (s *ContestStore) ListContests(ctx context.Context, page int) ([]models.Con
 	for rows.Next() {
 		var c models.Contest
 
-		if err := rows.Scan(&c.ID, &c.Name, &c.RegistrationStartTime, &c.RegistrationEndTime, &c.StartTime, &c.EndTime); err != nil {
+		if err := rows.Scan(&c.ID, &c.Name, &c.RegistrationStartTime, &c.RegistrationEndTime, &c.StartTime, &c.EndTime, &c.EligibleTo); err != nil {
 			log.Printf("contest-store: row scan failed: %v", err)
 			return nil, fmt.Errorf("scan contest row: %w", err)
 		}
@@ -59,4 +59,23 @@ func (s *ContestStore) ListContests(ctx context.Context, page int) ([]models.Con
 	}
 
 	return contests, nil
+}
+
+func (s *ContestStore) IsRegistered(ctx context.Context, contestID string, userID string) (bool, error) {
+	const q = `
+		SELECT EXISTS (
+			SELECT 1
+			FROM contest_registrations
+			WHERE contest_id = $1 AND user_id = $2
+		)
+	`
+
+	var exists bool
+	err := s.db.QueryRowContext(ctx, q, contestID, userID).Scan(&exists)
+	if err != nil {
+		log.Printf("contest-store: query failed: %v", err)
+		return false, fmt.Errorf("query contest registration: %w", err)
+	}
+
+	return exists, nil
 }
