@@ -60,3 +60,22 @@ func (s *ContestStore) ListContests(ctx context.Context, page int) ([]models.Con
 
 	return contests, nil
 }
+
+func (s *ContestStore) IsRegistered(ctx context.Context, contestID string, userID string) (bool, error) {
+	const q = `
+		SELECT EXISTS (
+			SELECT 1
+			FROM contest_registrations
+			WHERE contest_id = $1 AND user_id = $2
+		)
+	`
+
+	var exists bool
+	err := s.db.QueryRowContext(ctx, q, contestID, userID).Scan(&exists)
+	if err != nil {
+		log.Printf("contest-store: query failed: %v", err)
+		return false, fmt.Errorf("query contest registration: %w", err)
+	}
+
+	return exists, nil
+}
