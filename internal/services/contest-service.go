@@ -20,6 +20,5 @@ func (cs *ContestService) RegisterParticipant(contestID string, userID string) e
 }
 
 func (cs *ContestService) ListContests(ctx context.Context, page int) ([]models.Contest, error) {
-	//SAMPLE
 	return cs.stores.Contests.ListContests(ctx, page)
 }
