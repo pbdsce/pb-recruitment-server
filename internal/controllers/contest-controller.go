@@ -46,3 +46,64 @@ func (cc *ContestController) ListContests(ctx echo.Context) error {
 	}
 	return ctx.JSON(http.StatusOK, contests)
 }
+
+func (cc *ContestController) GetContest(ctx echo.Context) error {
+	contestID := ctx.Param("id")
+
+	userID, ok := ctx.Get(common.AUTH_USER_ID).(string)
+	if !ok {
+		userID = ""
+	}
+
+	contest, err := cc.contestService.GetContest(ctx.Request().Context(), contestID, userID)
+	if err != nil {
+		return ctx.JSON(http.StatusInternalServerError, map[string]string{
+			"error": common.FetchContestFailedError.Error(),
+		})
+	}
+
+	if contest == nil {
+		return ctx.JSON(http.StatusNotFound, map[string]string{
+			"error": common.ContestNotFoundError.Error(),
+		})
+	}
+
+	return ctx.JSON(http.StatusOK, contest)
+}
+
+func (cc *ContestController) GetContestProblemsList(ctx echo.Context) error {
+	contestID := ctx.Param("id")
+
+	problems, err := cc.contestService.GetContestProblemsList(ctx.Request().Context(), contestID)
+	if err != nil {
+		if err == common.ContestNotFoundError {
+			return ctx.JSON(http.StatusNotFound, map[string]string{
+				"error": common.ContestNotFoundError.Error(),
+			})
+		}
+		return ctx.JSON(http.StatusInternalServerError, map[string]string{
+			"error": "failed to get contest problems",
+		})
+	}
+
+	return ctx.JSON(http.StatusOK, problems)
+}
+
+func (cc *ContestController) GetContestProblem(ctx echo.Context) error {
+	contestID := ctx.Param("id")
+	problemID := ctx.Param("problem_id")
+
+	problem, err := cc.contestService.GetContestProblem(ctx.Request().Context(), contestID, problemID)
+	if err != nil {
+		if err == common.ContestNotFoundError {
+			return ctx.JSON(http.StatusNotFound, map[string]string{
+				"error": common.ContestNotFoundError.Error(),
+			})
+		}
+		return ctx.JSON(http.StatusInternalServerError, map[string]string{
+			"error": "failed to get problem statement",
+		})
+	}
+
+	return ctx.JSON(http.StatusOK, problem)
+}
