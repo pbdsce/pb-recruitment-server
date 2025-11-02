@@ -12,6 +12,7 @@ type Storage struct {
 	// Declarations of method extensions for each store go here
 	Contests interface {
 		ListContests(context.Context, int) ([]models.Contest, error)
+		IsRegistered(context.Context, string, string) (bool, error)
 	}
 	Users interface {
 		CreateUser(context.Context, *auth.UserRecord, *dto.CreateUserRequest) error

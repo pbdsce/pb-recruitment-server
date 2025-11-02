@@ -1,4 +1,4 @@
-name: Build, Push, and Deploy to ECS
+name: CI Check - Build Docker image
 
 on:
   push:

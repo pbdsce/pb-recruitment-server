@@ -32,8 +32,8 @@ COPY --from=builder /build/app /app/app
 
 COPY --from=builder /build/internal/migrations /app/internal/migrations
 
-# # Create empty .env file to prevent loading errors when STAGE != prod
-# RUN touch /app/.env
+# Create empty .env file to prevent loading errors when STAGE != prod
+RUN touch /app/.env
 
 # Change ownership to non-root user
 RUN chown -R appuser:appuser /app
