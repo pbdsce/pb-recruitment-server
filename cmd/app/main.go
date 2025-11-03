@@ -29,6 +29,7 @@ func main() {
 			services.NewContestService,
 			services.NewUserService,
 			services.NewSubmissionService,
+			services.NewAdminService,
 			// Server
 			internal.NewEchoServer,
 			// Stores
@@ -41,6 +42,7 @@ func main() {
 		fx.Invoke(routes.AddUserRoutes),
 		fx.Invoke(routes.AddContestRoutes),
 		fx.Invoke(routes.AddSubmissionRoutes),
+		fx.Invoke(routes.AddAdminRoutes),
 
 		// Start the Echo server
 		fx.Invoke(internal.StartEchoServer),
