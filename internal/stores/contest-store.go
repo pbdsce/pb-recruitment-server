@@ -79,3 +79,75 @@ func (s *ContestStore) IsRegistered(ctx context.Context, contestID string, userI
 
 	return exists, nil
 }
+
+func (s *ContestStore) CreateContest(ctx context.Context, c *models.Contest) error {
+	if s == nil || s.db == nil {
+		return fmt.Errorf("contest store: db is not initialized")
+	}
+
+	const q = `
+        INSERT INTO contests (id, name, registration_start_time, registration_end_time, start_time, end_time)
+        VALUES ($1, $2, $3, $4, $5, $6)
+    `
+
+	_, err := s.db.ExecContext(ctx, q,
+		c.ID,
+		c.Name,
+		c.RegistrationStartTime,
+		c.RegistrationEndTime,
+		c.StartTime,
+		c.EndTime,
+	)
+
+	if err != nil {
+		log.Printf("contest-store: insert failed: %v", err)
+		return fmt.Errorf("insert contest: %w", err)
+	}
+
+	return nil
+}
+
+func (s *ContestStore) UpdateContest(ctx context.Context, c *models.Contest) error {
+	if s == nil || s.db == nil {
+		return fmt.Errorf("contest store: db is not initialized")
+	}
+
+	const q = `
+        UPDATE contests
+        SET name = $2,
+            registration_start_time = $3,
+            registration_end_time = $4,
+            start_time = $5,
+            end_time = $6
+        WHERE id = $1
+    `
+	_, err := s.db.ExecContext(ctx, q,
+		c.ID,
+		c.Name,
+		c.RegistrationStartTime,
+		c.RegistrationEndTime,
+		c.StartTime,
+		c.EndTime,
+	)
+
+	if err != nil {
+		log.Printf("contest-store: update failed: %v", err)
+		return fmt.Errorf("update contest: %w", err)
+	}
+	return nil
+}
+
+func (s *ContestStore) DeleteContest(ctx context.Context, contestID string) error {
+	if s == nil || s.db == nil {
+		return fmt.Errorf("contest store: db is not initialized")
+	}
+
+	const q = `DELETE FROM contests WHERE id = $1`
+
+	_, err := s.db.ExecContext(ctx, q, contestID)
+	if err != nil {
+		log.Printf("contest-store: delete failed: %v", err)
+		return fmt.Errorf("delete contest: %w", err)
+	}
+	return nil
+}

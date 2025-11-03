@@ -14,6 +14,9 @@ type Storage struct {
 	Contests interface {
 		ListContests(context.Context, int) ([]models.Contest, error)
 		IsRegistered(context.Context, string, string) (bool, error)
+		CreateContest(ctx context.Context, c *models.Contest) error
+		UpdateContest(ctx context.Context, c *models.Contest) error
+		DeleteContest(ctx context.Context, contestID string) error
 	}
 	Users interface {
 		CreateUser(context.Context, *auth.UserRecord, *dto.CreateUserRequest) error
