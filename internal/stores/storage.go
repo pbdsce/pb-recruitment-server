@@ -31,7 +31,8 @@ type Storage struct {
 		// todo: add ranking store
 	}
 	Problems interface {
-		// todo: add problem store
+		GetProblemList(context.Context, string) ([]dto.ProblemOverview, error)
+		GetProblem(context.Context, string, string) (*dto.GetProblemStatementResponse, error)
 	}
 }
 
