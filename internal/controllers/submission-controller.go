@@ -7,7 +7,6 @@ import (
 	"github.com/labstack/echo/v4"
 	"errors"
 	"context"
-	"app/internal/models"
 	"app/internal/models/dto"
 )
 
@@ -105,7 +104,7 @@ func(sc *SubmissionController) SubmitSolution(ctx echo.Context) error {
 		})
 	}
 
-	isRegistered, err := sc.contestService.IsUserRegistered(reqCtx, userID, req.ContestID)
+	isRegistered, err := sc.contestService.IsUserRegistered(reqCtx, req.ContestID, userID)
 	if err != nil {
 		return ctx.JSON(http.StatusInternalServerError, map[string]string{
 			"error": "failed to check contest registration",
@@ -115,10 +114,7 @@ func(sc *SubmissionController) SubmitSolution(ctx echo.Context) error {
 		return ctx.NoContent(http.StatusForbidden)
 	}
 
-	submissionType := models.MCQ
-	if req.Code != "" || req.Language != "" {
-		submissionType = models.Code
-	}
+	submissionType := req.Type
 	
 	submissionID, err := sc.submissionService.CreateSubmission(reqCtx, userID, submissionType, req)
 	if err != nil {
