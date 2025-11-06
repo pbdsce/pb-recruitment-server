@@ -40,16 +40,16 @@ func AddContestRoutes(
 	// 	middleware.RequireFirebaseAuth(authClient),
 	// )
 
-	// // Get the problems of a specific contest for the authenticated user
-	// // Do not return the problem statements themselves
-	// e.GET("/contests/:id/problems",
-	// 	contestController.GetContestProblemsList,
-	// 	middleware.RequireFirebaseAuth(authClient),
-	// )
+	// Get the problems of a specific contest for the authenticated user
+	// Do not return the problem statements themselves
+	e.GET("/contests/:id/problems",
+		contestController.GetContestProblemsList,
+		middleware.RequireFirebaseAuth(authClient),
+	)
 
-	// // Get the problem statement of a specific problem in a contest for the authenticated user
-	// e.GET("/contests/:id/problems/:problem_id",
-	// 	contestController.GetContestProblemStatement,
-	// 	middleware.RequireFirebaseAuth(authClient),
-	// )
+	// Get the problem statement of a specific problem in a contest for the authenticated user
+	e.GET("/contests/:id/problems/:problem_id",
+		contestController.GetContestProblem,
+		middleware.RequireFirebaseAuth(authClient),
+	)
 }
