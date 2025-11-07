@@ -7,8 +7,9 @@ import (
 	"app/internal/stores"
 	"context"
 	"fmt"
-	"log"
 	"strconv"
+
+	"github.com/labstack/gommon/log"
 )
 
 type ContestService struct {
@@ -26,7 +27,7 @@ func (cs *ContestService) ModifyRegistration(ctx context.Context, contestID stri
 	}
 
 	if contest.GetRegistrationStatus() != models.ContestRegistrationOpen {
-		log.Printf("contest %s is not open for registration", contestID)
+		log.Errorf("contest %s is not open for registration", contestID)
 		return common.ContestRegistrationClosedError
 	}
 
@@ -38,7 +39,7 @@ func (cs *ContestService) ModifyRegistration(ctx context.Context, contestID stri
 		}
 
 		if contest.EligibleTo != strconv.Itoa(user.CurrentYear) {
-			log.Printf("user %s is not eligible to contest %s", userID, contestID)
+			log.Errorf("user %s is not eligible to contest %s", userID, contestID)
 			return common.InvalidYearError
 		}
 
