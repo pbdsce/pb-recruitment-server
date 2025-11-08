@@ -3,6 +3,7 @@ package routes
 import (
 	"app/internal/controllers"
 	"app/internal/middleware"
+	"app/internal/models/dto"
 
 	"firebase.google.com/go/v4/auth"
 	"github.com/labstack/echo/v4"
@@ -33,12 +34,13 @@ func AddContestRoutes(
 	// 	contestController.GetLeaderboard,
 	// )
 
-	// // Register/Unregister the authenticated user for a specific contest
-	// // Use a query parameter action=register or action=unregister
-	// e.POST("/contests/:id/registration",
-	// 	contestController.ModifyRegistration,
-	// 	middleware.RequireFirebaseAuth(authClient),
-	// )
+	// Register/Unregister the authenticated user for a specific contest
+	// Use a request body with action=register or action=unregister
+	e.POST("/contests/:id/registration",
+		contestController.ModifyRegistration,
+		middleware.RequireFirebaseAuth(authClient),
+		middleware.ValidateRequest(new(dto.ModifyRegistrationRequest)),
+	)
 
 	// Get the problems of a specific contest for the authenticated user
 	// Do not return the problem statements themselves
