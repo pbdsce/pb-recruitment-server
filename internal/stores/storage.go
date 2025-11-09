@@ -39,11 +39,11 @@ type Storage struct {
 		CreateProblem(ctx context.Context, p *models.Problem) error
 		UpdateProblem(ctx context.Context, p *models.Problem) error
 		DeleteProblem(ctx context.Context, contestID string, problemID string) error
+		GetProblemList(ctx context.Context, contestID string) ([]dto.ProblemOverview, error)
+		GetProblem(ctx context.Context, problemID string, contestID string) (*dto.GetProblemStatementResponse, error)
 	}
 	Admins interface {
 		IsAdmin(ctx context.Context, userID string) (bool, error)
-		GetProblemList(context.Context, string) ([]dto.ProblemOverview, error)
-		GetProblem(context.Context, string, string) (*dto.GetProblemStatementResponse, error)
 	}
 }
 

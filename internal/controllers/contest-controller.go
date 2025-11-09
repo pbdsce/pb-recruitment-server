@@ -272,6 +272,7 @@ func (cc *ContestController) HandleUpdateLeaderboardUser(ctx echo.Context) error
 		"contestID": contestID,
 		"userID":    userID,
 	})
+}
 func (cc *ContestController) GetContest(ctx echo.Context) error {
 	contestID := ctx.Param("id")
 

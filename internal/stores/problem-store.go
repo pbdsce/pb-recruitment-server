@@ -1,8 +1,8 @@
 package stores
 
 import (
-	"app/internal/models"
 	"app/internal/common"
+	"app/internal/models"
 	"app/internal/models/dto"
 	"context"
 	"database/sql"
@@ -94,6 +94,8 @@ func (s *ProblemStore) DeleteProblem(ctx context.Context, contestID string, prob
 	}
 
 	return nil
+}
+
 func (s *ProblemStore) GetProblemList(ctx context.Context, contestID string) ([]dto.ProblemOverview, error) {
 	const q = `
 		SELECT id, name, score, type
@@ -102,11 +104,11 @@ func (s *ProblemStore) GetProblemList(ctx context.Context, contestID string) ([]
 	`
 
 	rows, err := s.db.QueryContext(ctx, q, contestID)
-	defer rows.Close()
 	if err != nil {
 		log.Printf("problem-store: query failed: %v", err)
 		return nil, fmt.Errorf("query contest problems: %w", err)
 	}
+	defer rows.Close()
 
 	var problems []dto.ProblemOverview
 	for rows.Next() {
