@@ -17,6 +17,9 @@ type Storage struct {
 		CreateContest(ctx context.Context, c *models.Contest) error
 		UpdateContest(ctx context.Context, c *models.Contest) error
 		DeleteContest(ctx context.Context, contestID string) error
+		GetContest(context.Context, string) (*dto.GetContestResponse, error)
+		RegisterUser(context.Context, string, string) error
+		UnregisterUser(context.Context, string, string) error
 	}
 	Users interface {
 		CreateUser(context.Context, *auth.UserRecord, *dto.CreateUserRequest) error
@@ -39,6 +42,8 @@ type Storage struct {
 	}
 	Admins interface {
 		IsAdmin(ctx context.Context, userID string) (bool, error)
+		GetProblemList(context.Context, string) ([]dto.ProblemOverview, error)
+		GetProblem(context.Context, string, string) (*dto.GetProblemStatementResponse, error)
 	}
 }
 

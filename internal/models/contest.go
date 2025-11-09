@@ -45,5 +45,5 @@ func (c *Contest) GetRunningStatus() ContestRunningStatus {
 	} else if c.StartTime <= now && c.EndTime >= now {
 		return ContestRunningOpen
 	}
-	return ContestRunningOpen
+	return ContestRunningClosed
 }
