@@ -6,23 +6,18 @@ import (
 	"net/http"
 	"github.com/labstack/echo/v4"
 	"errors"
-	"context"
 	"app/internal/models/dto"
 )
 
-type ContestService interface {
-	IsUserRegistered(ctx context.Context, contestID, userID string) (bool, error)
-}
-
 type SubmissionController struct {
 	submissionService *services.SubmissionService
-	contestService     ContestService
+	contestService    *services.ContestService
 }
 
-func NewSubmissionController(submissionService *services.SubmissionService, contestService ContestService) *SubmissionController {
+func NewSubmissionController(submissionService *services.SubmissionService, contestService *services.ContestService) *SubmissionController {
 	return &SubmissionController{
 		submissionService: submissionService,
-		contestService:     contestService,
+		contestService:    contestService,
 	}
 }
 
@@ -104,13 +99,13 @@ func(sc *SubmissionController) SubmitSolution(ctx echo.Context) error {
 		})
 	}
 
-	isRegistered, err := sc.contestService.IsUserRegistered(reqCtx, req.ContestID, userID)
+	contest_response, err := sc.contestService.GetContest(reqCtx, req.ContestID, userID)
 	if err != nil {
 		return ctx.JSON(http.StatusInternalServerError, map[string]string{
 			"error": "failed to check contest registration",
 		})
 	}
-	if !isRegistered {
+	if !*contest_response.IsRegistered {
 		return ctx.NoContent(http.StatusForbidden)
 	}
 

@@ -216,6 +216,9 @@ func (s *SubmissionStore) CreateSubmission(ctx context.Context, sub *models.Subm
 	sub.ID = uuid.NewString()
 	sub.CreatedAt = time.Now().Unix()
 
+	dbType := strings.ToLower(string(sub.Type))
+	dbStatus := "pending"
+
 	choiceStrings := make([]string, len(sub.Option))
 	for i, choice := range sub.Option {
 		choiceStrings[i] = strconv.Itoa(choice)
@@ -235,11 +238,11 @@ func (s *SubmissionStore) CreateSubmission(ctx context.Context, sub *models.Subm
 		sub.UserID,
 		sub.ContestID,
 		sub.ProblemID,
-		sub.Type,
+		dbType,
 		sub.Language,
 		sub.Code,
 		mcqChoices,
-		sub.Status,
+		dbStatus,
 		sub.CreatedAt,
 		sub.Runtime,
 		sub.Memory,
