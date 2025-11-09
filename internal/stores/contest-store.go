@@ -153,6 +153,9 @@ func (s *ContestStore) DeleteContest(ctx context.Context, contestID string) erro
 		log.Printf("contest-store: delete failed: %v", err)
 		return fmt.Errorf("delete contest: %w", err)
 	}
+	return nil
+}
+
 func (s *ContestStore) GetContest(ctx context.Context, contestID string) (*dto.GetContestResponse, error) {
 	const q = `
 		SELECT id, name, registration_start_time, registration_end_time, start_time, end_time, eligible_to

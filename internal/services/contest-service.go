@@ -7,9 +7,10 @@ import (
 	"app/internal/stores"
 	"context"
 
-	"github.com/google/uuid"
 	"fmt"
 	"strconv"
+
+	"github.com/google/uuid"
 
 	"github.com/labstack/gommon/log"
 )
@@ -44,6 +45,8 @@ func (cs *ContestService) DeleteContest(ctx context.Context, contestID string) e
 func (cs *ContestService) RegisterParticipant(contestID string, userID string) error {
 	// Registration logic would go here
 	return nil
+}
+
 func (cs *ContestService) ModifyRegistration(ctx context.Context, contestID string, userID string, action dto.RegisterationAction) error {
 	contest, err := cs.stores.Contests.GetContest(ctx, contestID)
 	if err != nil {
@@ -109,6 +112,8 @@ func (cs *ContestService) DeleteProblem(ctx context.Context, contestID string, p
 
 func (cs *ContestService) UpdateLeaderboardUser(ctx context.Context, contestID string, userID string, req *dto.UpdateLeaderboardUserRequest) error {
 	return cs.stores.Rankings.UpdateLeaderboardUser(ctx, contestID, userID, req)
+}
+
 func (cs *ContestService) GetProblemVisibility(ctx context.Context, contestID string, userID string) error {
 
 	contest, err := cs.GetContest(ctx, contestID, userID)
