@@ -1,0 +1,5 @@
+CREATE TABLE admin (
+    user_id VARCHAR(255) PRIMARY KEY,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
