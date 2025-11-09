@@ -14,6 +14,9 @@ type Storage struct {
 	Contests interface {
 		ListContests(context.Context, int) ([]models.Contest, error)
 		IsRegistered(context.Context, string, string) (bool, error)
+		CreateContest(ctx context.Context, c *models.Contest) error
+		UpdateContest(ctx context.Context, c *models.Contest) error
+		DeleteContest(ctx context.Context, contestID string) error
 		GetContest(context.Context, string) (*dto.GetContestResponse, error)
 		RegisterUser(context.Context, string, string) error
 		UnregisterUser(context.Context, string, string) error
@@ -30,9 +33,15 @@ type Storage struct {
 		ListUserSubmissionsByProblemID(context.Context, string, string, int) ([]models.Submission, error)
 	}
 	Rankings interface {
-		// todo: add ranking store
+		UpdateLeaderboardUser(ctx context.Context, contestID string, userID string, req *dto.UpdateLeaderboardUserRequest) error
 	}
 	Problems interface {
+		CreateProblem(ctx context.Context, p *models.Problem) error
+		UpdateProblem(ctx context.Context, p *models.Problem) error
+		DeleteProblem(ctx context.Context, contestID string, problemID string) error
+	}
+	Admins interface {
+		IsAdmin(ctx context.Context, userID string) (bool, error)
 		GetProblemList(context.Context, string) ([]dto.ProblemOverview, error)
 		GetProblem(context.Context, string, string) (*dto.GetProblemStatementResponse, error)
 	}
@@ -45,5 +54,6 @@ func NewStorage(db *sql.DB) *Storage {
 		Submissions: NewSubmissionStore(db),
 		Rankings:    NewRankingStore(db),
 		Problems:    NewProblemStore(db),
+		Admins:      NewAdminStore(db),
 	}
 }
