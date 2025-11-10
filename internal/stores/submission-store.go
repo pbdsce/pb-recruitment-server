@@ -9,6 +9,8 @@ import (
 	"log"
 	"strconv"
 	"strings"
+	"time"
+	"github.com/google/uuid"
 )
 
 type SubmissionStore struct {
@@ -204,4 +206,52 @@ func (s *SubmissionStore) ListUserSubmissionsByProblemID(ctx context.Context, us
 	}
 
 	return submissions, nil
+}
+
+func (s *SubmissionStore) CreateSubmission(ctx context.Context, sub *models.Submission) (string, error) {
+	if s == nil || s.db == nil {
+		return "", fmt.Errorf("submission store: db is not initialized")
+	}
+
+	sub.ID = uuid.NewString()
+	sub.CreatedAt = time.Now().Unix()
+
+	dbType := strings.ToLower(string(sub.Type))
+	dbStatus := "pending"
+
+	choiceStrings := make([]string, len(sub.Option))
+	for i, choice := range sub.Option {
+		choiceStrings[i] = strconv.Itoa(choice)
+	}
+	mcqChoices := fmt.Sprintf("{%s}", strings.Join(choiceStrings, ","))
+
+	const q = `
+		INSERT INTO 
+		submissions (id, user_id, contest_id, problem_id, type, language, code, choices, status, created_at, runtime, memory)
+		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
+		RETURNING id
+	`
+
+	var submissionID string
+	err := s.db.QueryRowContext(ctx, q,
+		sub.ID,
+		sub.UserID,
+		sub.ContestID,
+		sub.ProblemID,
+		dbType,
+		sub.Language,
+		sub.Code,
+		mcqChoices,
+		dbStatus,
+		sub.CreatedAt,
+		sub.Runtime,
+		sub.Memory,
+	).Scan(&submissionID)
+
+	if err != nil {
+		log.Printf("submission-store: failed to insert submission: %v", err)
+		return "", fmt.Errorf("insert submission: %w", err)
+	}
+
+	return submissionID, nil
 }
