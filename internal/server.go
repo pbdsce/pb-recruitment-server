@@ -21,6 +21,7 @@ func NewEchoServer(
 		AllowOrigins: []string{
 			"https://recruitment.pointblank.club",
 			"http://recruitment.pointblank.club",
+			"http://localhost:5173",
 		},
 		AllowMethods: []string{
 			echo.GET,
