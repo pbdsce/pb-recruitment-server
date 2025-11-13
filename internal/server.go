@@ -17,7 +17,28 @@ func NewEchoServer(
 	e := echo.New()
 	e.Use(mdw.Recover())
 	e.Use(mdw.Logger())
-	e.Use(mdw.CORS())
+	e.Use(mdw.CORSWithConfig(mdw.CORSConfig{
+		AllowOrigins: []string{
+			"https://recruitment.pointblank.club",
+			"http://recruitment.pointblank.club",
+			"http://localhost:5173",
+		},
+		AllowMethods: []string{
+			echo.GET,
+			echo.POST,
+			echo.PUT,
+			echo.DELETE,
+			echo.PATCH,
+			echo.OPTIONS,
+		},
+		AllowHeaders: []string{
+			echo.HeaderOrigin,
+			echo.HeaderContentType,
+			echo.HeaderAccept,
+			echo.HeaderAuthorization,
+		},
+		AllowCredentials: true,
+	}))
 
 	// Health check endpoint
 	// This can be used by Kubernetes or any load balancer
