@@ -5,6 +5,8 @@ import (
 	"app/internal/middleware"
 	"app/internal/services"
 
+	"net/http"
+
 	"firebase.google.com/go/v4/auth"
 	"github.com/labstack/echo/v4"
 )
@@ -17,12 +19,16 @@ func AddAdminRoutes(
 	adminService *services.AdminService,
 ) {
 	adminGroup := e.Group("/admin")
-
 	adminGroup.Use(middleware.RequireFirebaseAuth(authClient))
-
 	adminGroup.Use(middleware.RequireAdminRole(userService, adminService))
 
+	// Check Is Admin
+	adminGroup.GET("/", func(c echo.Context) error {
+		return c.NoContent(http.StatusOK)
+	})
+
 	//Contest Management
+	adminGroup.GET("/contest/list", contestController.ListContests)
 	adminGroup.POST("/contest", contestController.HandleCreateContest)
 	adminGroup.PUT("/contest/:id", contestController.HandleUpdateContest)
 	adminGroup.DELETE("/contest/:id", contestController.HandleDeleteContest)

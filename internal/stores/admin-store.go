@@ -23,7 +23,8 @@ func (s *AdminStore) IsAdmin(ctx context.Context, userID string) (bool, error) {
 	var exists bool
 	query := "SELECT EXISTS(SELECT 1 FROM admin WHERE user_id = $1)"
 
-	err := s.db.QueryRowContext(ctx, query, userID).Scan(&exists)
+	row := s.db.QueryRowContext(ctx, query, userID)
+	err := row.Scan(&exists)
 	if err != nil {
 		log.Printf("admin-store: query failed: %v", err)
 		return false, fmt.Errorf("query admin status: %w", err)

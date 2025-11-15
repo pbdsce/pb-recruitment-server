@@ -11,7 +11,6 @@ import (
 func AdminAuth(userService *services.UserService, adminService *services.AdminService) echo.MiddlewareFunc {
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {
-
 			firebaseUID, ok := c.Get(common.AUTH_USER_ID).(string)
 			if !ok || firebaseUID == "" {
 				return c.JSON(http.StatusInternalServerError, map[string]string{
@@ -20,7 +19,6 @@ func AdminAuth(userService *services.UserService, adminService *services.AdminSe
 			}
 
 			user, err := userService.GetUserProfile(c.Request().Context(), firebaseUID)
-
 			if err != nil {
 				return c.JSON(http.StatusForbidden, map[string]string{
 					"error": "user profile not found",

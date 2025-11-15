@@ -42,6 +42,7 @@ func main() {
 		fx.Invoke(routes.AddUserRoutes),
 		fx.Invoke(routes.AddContestRoutes),
 		fx.Invoke(routes.AddSubmissionRoutes),
+		// Admin routes
 		fx.Invoke(routes.AddAdminRoutes),
 
 		// Start the Echo server
