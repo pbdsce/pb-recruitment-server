@@ -8,6 +8,7 @@ import (
 	"app/internal/routes"
 	"app/internal/services"
 	"app/internal/stores"
+	"app/internal/s3"
 	"log"
 
 	"go.uber.org/fx"
@@ -36,6 +37,8 @@ func main() {
 			stores.NewStorage,
 			// Database
 			db.NewDBConn,
+			// S3
+			s3.NewS3Client,
 		),
 
 		// Add routes to the Echo server

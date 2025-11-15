@@ -1,0 +1,77 @@
+package s3
+
+import (
+	"app/internal/common"
+	"context"
+	"errors"
+	"io"
+	"os"
+	"strings"
+
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/config"
+	"github.com/aws/aws-sdk-go-v2/service/s3"
+	"github.com/aws/aws-sdk-go-v2/service/s3/types"
+	"github.com/aws/smithy-go"
+	"github.com/labstack/gommon/log"
+)
+
+type S3 struct {
+	client *s3.Client
+	Bucket string
+}
+
+func NewS3Client() *S3 {
+	cfg, err := config.LoadDefaultConfig(context.Background())
+	if err != nil {
+		log.Fatal(err)
+	}
+	client := s3.NewFromConfig(cfg)
+
+	return &S3{
+		client: client,
+		Bucket: os.Getenv("S3_SUBMISSIONS_BUCKET"),
+	}
+}
+
+func (s *S3) PutObject(context context.Context, key string, contents string) error {
+	_, err := s.client.PutObject(context, &s3.PutObjectInput{
+		Bucket:      aws.String(s.Bucket),
+		Key:         aws.String(key),
+		Body:        strings.NewReader(contents),
+		IfNoneMatch: aws.String("*"),
+	})
+	if err != nil {
+		var apiErr smithy.APIError
+		if errors.As(err, &apiErr) && apiErr.ErrorCode() == "PreconditionFailed" {
+			return common.KeyAlreadyExistsError
+		}
+		log.Errorf("s3: failed to upload object: %v", err)
+	}
+	return err
+}
+
+func (s *S3) GetObject(context context.Context, key string) (string, error) {
+	resp, err := s.client.GetObject(context, &s3.GetObjectInput{
+		Bucket: aws.String(s.Bucket),
+		Key:    aws.String(key),
+	})
+	if err != nil {
+		var notFound *types.NoSuchKey
+		if errors.As(err, &notFound) {
+			log.Errorf("s3: key %s not found: %v", key, err)
+			return "", common.KeyNotFoundError
+		}
+		log.Errorf("s3: failed to get object: %v", err)
+		return "", err
+	}
+	defer resp.Body.Close()
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		log.Errorf("s3: failed to read object body: %v", err)
+		return "", err
+	}
+
+	return string(body), nil
+}
