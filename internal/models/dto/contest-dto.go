@@ -8,7 +8,7 @@ type GetContestResponse struct {
 	IsRegistered *bool `json:"is_registered,omitempty"` // Whether the user is registered for the contest
 }
 
-type CreateContestRequest struct {
+type UpsertContestRequest struct {
 	Name                  string `json:"name" validate:"required"`
 	Description           string `json:"description" validate:"required"` // base64 encoded
 	RegistrationStartTime int64  `json:"registration_start_time" validate:"required"`

@@ -70,7 +70,7 @@ func (cc *ContestController) ListContests(ctx echo.Context) error {
 
 // Admin Handlers
 func (cc *ContestController) HandleCreateContest(ctx echo.Context) error {
-	request := ctx.Get(common.VALIDATED_REQUEST_BODY).(*dto.CreateContestRequest)
+	request := ctx.Get(common.VALIDATED_REQUEST_BODY).(*dto.UpsertContestRequest)
 	if request.Name == "" || request.StartTime == 0 || request.EndTime == 0 {
 		return ctx.JSON(http.StatusBadRequest, map[string]string{
 			"error": "name, start_time, and end_time are required fields",
@@ -103,24 +103,33 @@ func (cc *ContestController) HandleCreateContest(ctx echo.Context) error {
 }
 
 func (cc *ContestController) HandleUpdateContest(ctx echo.Context) error {
-
-	contestID := ctx.Param("id")
-
-	var contestToUpdate models.Contest
-	if err := ctx.Bind(&contestToUpdate); err != nil {
-		return ctx.JSON(http.StatusBadRequest, map[string]string{
-			"error": "invalid request body",
-		})
-	}
-
-	if contestToUpdate.Name == "" || contestToUpdate.StartTime == 0 || contestToUpdate.EndTime == 0 {
+	req := ctx.Get(common.VALIDATED_REQUEST_BODY).(*dto.UpsertContestRequest)
+	if req.Name == "" || req.StartTime == 0 || req.EndTime == 0 {
 		return ctx.JSON(http.StatusBadRequest, map[string]string{
 			"error": "name, start_time, and end_time are required fields",
 		})
 	}
 
-	contestToUpdate.ID = contestID
+	// Verify contest exists
+	id := ctx.Param("id")
+	_, err := cc.contestService.GetContest(ctx.Request().Context(), id, "")
+	if err != nil {
+		if errors.Is(err, common.ContestNotFoundError) {
+			return ctx.NoContent(http.StatusNotFound)
+		}
+		return ctx.NoContent(http.StatusInternalServerError)
+	}
 
+	contestToUpdate := models.Contest{
+		ID:                    id,
+		Name:                  req.Name,
+		Description:           req.Description,
+		RegistrationStartTime: req.RegistrationStartTime,
+		RegistrationEndTime:   req.RegistrationEndTime,
+		StartTime:             req.StartTime,
+		EndTime:               req.EndTime,
+		EligibleTo:            req.EligibleTo,
+	}
 	updatedContest, err := cc.contestService.UpdateContest(ctx.Request().Context(), &contestToUpdate)
 	if err != nil {
 		return ctx.JSON(http.StatusInternalServerError, map[string]string{

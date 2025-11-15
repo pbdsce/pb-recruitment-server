@@ -30,8 +30,9 @@ func AddAdminRoutes(
 
 	//Contest Management
 	adminGroup.GET("/contests/list", contestController.ListContests)
-	adminGroup.POST("/contest", contestController.HandleCreateContest, middleware.ValidateRequest(new(dto.CreateContestRequest)))
-	adminGroup.PUT("/contest/:id", contestController.HandleUpdateContest)
+	adminGroup.GET("/contest/:id", contestController.GetContest)
+	adminGroup.POST("/contest", contestController.HandleCreateContest, middleware.ValidateRequest(new(dto.UpsertContestRequest)))
+	adminGroup.PUT("/contest/:id", contestController.HandleUpdateContest, middleware.ValidateRequest(new(dto.UpsertContestRequest)))
 	adminGroup.DELETE("/contest/:id", contestController.HandleDeleteContest)
 
 	//Problem Management

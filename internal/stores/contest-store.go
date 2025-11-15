@@ -34,7 +34,7 @@ func (s *ContestStore) ListContests(ctx context.Context, page int) ([]models.Con
 	offset := page * pageSize
 
 	const q = `
-		SELECT id, name, registration_start_time, registration_end_time, start_time, end_time, eligible_to
+		SELECT id, name, registration_start_time, registration_end_time, start_time, end_time, eligible_to, description
 		FROM contests
 		ORDER BY start_time DESC
 		LIMIT $1 OFFSET $2
@@ -52,7 +52,7 @@ func (s *ContestStore) ListContests(ctx context.Context, page int) ([]models.Con
 		var c models.Contest
 		var eligibility sql.NullString
 
-		if err := rows.Scan(&c.ID, &c.Name, &c.RegistrationStartTime, &c.RegistrationEndTime, &c.StartTime, &c.EndTime, &eligibility); err != nil {
+		if err := rows.Scan(&c.ID, &c.Name, &c.RegistrationStartTime, &c.RegistrationEndTime, &c.StartTime, &c.EndTime, &eligibility, &c.Description); err != nil {
 			log.Printf("contest-store: row scan failed: %v", err)
 			return nil, fmt.Errorf("scan contest row: %w", err)
 		}
@@ -104,8 +104,8 @@ func (s *ContestStore) CreateContest(ctx context.Context, c *models.Contest) err
 	}
 
 	const q = `
-        INSERT INTO contests (id, name, registration_start_time, registration_end_time, start_time, end_time, eligible_to)
-        VALUES ($1, $2, $3, $4, $5, $6, $7)
+        INSERT INTO contests (id, name, registration_start_time, registration_end_time, start_time, end_time, eligible_to, description)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
     `
 
 	eligibilityStr := strings.Join(intSliceToStringSlice(c.EligibleTo), ",")
@@ -117,6 +117,7 @@ func (s *ContestStore) CreateContest(ctx context.Context, c *models.Contest) err
 		c.StartTime,
 		c.EndTime,
 		eligibilityStr,
+		c.Description,
 	)
 
 	if err != nil {
@@ -146,9 +147,12 @@ func (s *ContestStore) UpdateContest(ctx context.Context, c *models.Contest) err
             registration_start_time = $3,
             registration_end_time = $4,
             start_time = $5,
-            end_time = $6
+            end_time = $6,
+			eligible_to = $7,
+			description = $8
         WHERE id = $1
     `
+	eligibilityStr := strings.Join(intSliceToStringSlice(c.EligibleTo), ",")
 	_, err := s.db.ExecContext(ctx, q,
 		c.ID,
 		c.Name,
@@ -156,6 +160,8 @@ func (s *ContestStore) UpdateContest(ctx context.Context, c *models.Contest) err
 		c.RegistrationEndTime,
 		c.StartTime,
 		c.EndTime,
+		eligibilityStr,
+		c.Description,
 	)
 
 	if err != nil {
@@ -182,14 +188,15 @@ func (s *ContestStore) DeleteContest(ctx context.Context, contestID string) erro
 
 func (s *ContestStore) GetContest(ctx context.Context, contestID string) (*dto.GetContestResponse, error) {
 	const q = `
-		SELECT id, name, registration_start_time, registration_end_time, start_time, end_time, eligible_to
+		SELECT id, name, registration_start_time, registration_end_time, start_time, end_time, eligible_to, description
 		FROM contests
 		WHERE id = $1
 	`
 
 	var c dto.GetContestResponse
+	var eligibility sql.NullString
 	err := s.db.QueryRowContext(ctx, q, contestID).Scan(
-		&c.ID, &c.Name, &c.RegistrationStartTime, &c.RegistrationEndTime, &c.StartTime, &c.EndTime, &c.EligibleTo,
+		&c.ID, &c.Name, &c.RegistrationStartTime, &c.RegistrationEndTime, &c.StartTime, &c.EndTime, &eligibility, &c.Description,
 	)
 	if err != nil {
 		if err == sql.ErrNoRows {
@@ -197,6 +204,18 @@ func (s *ContestStore) GetContest(ctx context.Context, contestID string) (*dto.G
 		}
 		log.Printf("contest-store: query failed: %v", err)
 		return nil, fmt.Errorf("query contest: %w", err)
+	}
+
+	if eligibility.Valid {
+		eligibilityYears := strings.Split(eligibility.String, ",")
+		for _, yearStr := range eligibilityYears {
+			year, err := strconv.Atoi(yearStr)
+			if err != nil {
+				log.Printf("contest-store: invalid eligibility year: %v", err)
+				continue
+			}
+			c.EligibleTo = append(c.EligibleTo, year)
+		}
 	}
 
 	return &c, nil
