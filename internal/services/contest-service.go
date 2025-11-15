@@ -61,6 +61,7 @@ func (cs *ContestService) ModifyRegistration(ctx context.Context, contestID stri
 	case dto.RegisterAction:
 		user, err := cs.stores.Users.GetUserProfile(ctx, userID)
 		if err != nil {
+			log.Errorf("failed to get user profile for user %s: %v", userID, err)
 			return err
 		}
 

@@ -30,7 +30,7 @@ const (
 )
 
 func (c *Contest) GetRegistrationStatus() ContestRegistrationStatus {
-	now := time.Now().Unix()
+	now := time.Now().UnixMilli()
 	if c.RegistrationStartTime > now {
 		return ContestRegistrationUpcoming
 	} else if c.RegistrationStartTime <= now && c.RegistrationEndTime >= now {
@@ -40,7 +40,7 @@ func (c *Contest) GetRegistrationStatus() ContestRegistrationStatus {
 }
 
 func (c *Contest) GetRunningStatus() ContestRunningStatus {
-	now := time.Now().Unix()
+	now := time.Now().UnixMilli()
 	if c.StartTime > now {
 		return ContestRunningUpcoming
 	} else if c.StartTime <= now && c.EndTime >= now {
