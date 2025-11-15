@@ -22,6 +22,7 @@ func NewEchoServer(
 			"https://recruitment.pointblank.club",
 			"http://recruitment.pointblank.club",
 			"http://localhost:5173",
+			"http://127.0.0.1:5173",
 		},
 		AllowMethods: []string{
 			echo.GET,
