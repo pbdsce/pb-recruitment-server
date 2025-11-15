@@ -5,6 +5,7 @@ import (
 	"app/internal/models"
 	"app/internal/models/dto"
 	"app/internal/services"
+	"errors"
 	"net/http"
 	"strconv"
 
@@ -283,6 +284,9 @@ func (cc *ContestController) GetContest(ctx echo.Context) error {
 
 	contest, err := cc.contestService.GetContest(ctx.Request().Context(), contestID, userID)
 	if err != nil {
+		if errors.Is(err, common.ContestNotFoundError) {
+			return ctx.NoContent(http.StatusNotFound)
+		}
 		return ctx.JSON(http.StatusInternalServerError, map[string]string{
 			"error": common.FetchContestFailedError.Error(),
 		})
