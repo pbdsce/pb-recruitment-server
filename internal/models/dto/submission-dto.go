@@ -23,3 +23,8 @@ type ListProblemSubmissionsRequest struct {
 type ListProblemSubmissionsResponse struct {
 	Submissions []models.Submission `json:"submissions"`
 }
+
+type GetSubmissionDetailsResponse struct {
+	models.Submission
+	Code string `json:"code"`
+}

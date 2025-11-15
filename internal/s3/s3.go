@@ -44,6 +44,7 @@ func (s *S3) PutObject(context context.Context, key string, contents string) err
 	if err != nil {
 		var apiErr smithy.APIError
 		if errors.As(err, &apiErr) && apiErr.ErrorCode() == "PreconditionFailed" {
+			log.Errorf("s3: key %s already exists: %v", key, err)
 			return common.KeyAlreadyExistsError
 		}
 		log.Errorf("s3: failed to upload object: %v", err)

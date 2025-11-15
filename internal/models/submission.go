@@ -36,7 +36,6 @@ type Submission struct {
 	ProblemID 		string           `json:"problem_id"`
 	Type      		SubmissionType   `json:"type"`
 	Language  		string           `json:"language,omitempty"` // For code submissions
-	Code      		string           `json:"code,omitempty"`     // Base64 encoded code for code submissions
 	Option    		[]int            `json:"option,omitempty"`   // Selected option(s) for MCQ submissions
 	Status    		SubmissionStatus `json:"status"`             // e.g., "Pending", "Accepted", "Wrong Answer", etc.
 	CreatedAt 		int64            `json:"created_at"`         // Unix timestamp

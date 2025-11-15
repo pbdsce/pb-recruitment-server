@@ -2,11 +2,11 @@ package controllers
 
 import (
 	"app/internal/common"
-	"app/internal/services"
-	"net/http"
-	"github.com/labstack/echo/v4"
-	"errors"
 	"app/internal/models/dto"
+	"app/internal/services"
+	"errors"
+	"github.com/labstack/echo/v4"
+	"net/http"
 )
 
 type SubmissionController struct {
@@ -45,14 +45,14 @@ func(sc *SubmissionController) GetSubmissionStatus(ctx echo.Context) error {
 	})
 }
 
-func(sc *SubmissionController) GetSubmissionDetails(ctx echo.Context) error {
+func (sc *SubmissionController) GetSubmissionDetails(ctx echo.Context) error {
 	id := ctx.Param("id")
 	userID := ctx.Get(common.AUTH_USER_ID).(string)
 
 	sub, err := sc.submissionService.GetSubmissionDetailsByID(ctx.Request().Context(), id)
 	if err != nil {
-		if errors.Is(err, common.ErrNotFound) {
-			return ctx.NoContent(http.StatusNotFound)
+		if errors.Is(err, common.ErrNotFound) || errors.Is(err, common.KeyNotFoundError) {
+			return ctx.JSON(http.StatusNotFound, map[string]string{"error": err.Error()})
 		}
 		return ctx.JSON(http.StatusInternalServerError, map[string]string{
 			"error": "failed to get submission details",
@@ -88,7 +88,7 @@ func(sc *SubmissionController) ListUserSubmissions(ctx echo.Context) error {
 	})
 }	
 
-func(sc *SubmissionController) SubmitSolution(ctx echo.Context) error {
+func (sc *SubmissionController) SubmitSolution(ctx echo.Context) error {
 	reqCtx := ctx.Request().Context()
 	userID := ctx.Get(common.AUTH_USER_ID).(string)
 
@@ -110,11 +110,14 @@ func(sc *SubmissionController) SubmitSolution(ctx echo.Context) error {
 	}
 
 	submissionType := req.Type
-	
+
 	submissionID, err := sc.submissionService.CreateSubmission(reqCtx, userID, submissionType, req)
 	if err != nil {
 		if errors.Is(err, common.ErrNotFound) {
 			return ctx.NoContent(http.StatusNotFound)
+		}
+		if errors.Is(err, common.KeyAlreadyExistsError) {
+			return ctx.JSON(http.StatusConflict, map[string]string{"error": err.Error()})
 		}
 		return ctx.NoContent(http.StatusInternalServerError)
 	}
