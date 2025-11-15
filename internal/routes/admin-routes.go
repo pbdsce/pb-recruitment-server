@@ -3,6 +3,7 @@ package routes
 import (
 	"app/internal/controllers"
 	"app/internal/middleware"
+	"app/internal/models/dto"
 	"app/internal/services"
 
 	"net/http"
@@ -28,8 +29,8 @@ func AddAdminRoutes(
 	})
 
 	//Contest Management
-	adminGroup.GET("/contest/list", contestController.ListContests)
-	adminGroup.POST("/contest", contestController.HandleCreateContest)
+	adminGroup.GET("/contests/list", contestController.ListContests)
+	adminGroup.POST("/contest", contestController.HandleCreateContest, middleware.ValidateRequest(new(dto.CreateContestRequest)))
 	adminGroup.PUT("/contest/:id", contestController.HandleUpdateContest)
 	adminGroup.DELETE("/contest/:id", contestController.HandleDeleteContest)
 

@@ -7,6 +7,8 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"strconv"
+	"strings"
 	"time"
 
 	"github.com/labstack/gommon/log"
@@ -48,12 +50,24 @@ func (s *ContestStore) ListContests(ctx context.Context, page int) ([]models.Con
 	contests := make([]models.Contest, 0)
 	for rows.Next() {
 		var c models.Contest
+		var eligibility sql.NullString
 
-		if err := rows.Scan(&c.ID, &c.Name, &c.RegistrationStartTime, &c.RegistrationEndTime, &c.StartTime, &c.EndTime, &c.EligibleTo); err != nil {
+		if err := rows.Scan(&c.ID, &c.Name, &c.RegistrationStartTime, &c.RegistrationEndTime, &c.StartTime, &c.EndTime, &eligibility); err != nil {
 			log.Printf("contest-store: row scan failed: %v", err)
 			return nil, fmt.Errorf("scan contest row: %w", err)
 		}
 
+		if eligibility.Valid {
+			eligibilityYears := strings.Split(eligibility.String, ",")
+			for _, yearStr := range eligibilityYears {
+				year, err := strconv.Atoi(yearStr)
+				if err != nil {
+					log.Printf("contest-store: invalid eligibility year: %v", err)
+					continue
+				}
+				c.EligibleTo = append(c.EligibleTo, year)
+			}
+		}
 		contests = append(contests, c)
 	}
 
@@ -90,10 +104,11 @@ func (s *ContestStore) CreateContest(ctx context.Context, c *models.Contest) err
 	}
 
 	const q = `
-        INSERT INTO contests (id, name, registration_start_time, registration_end_time, start_time, end_time)
-        VALUES ($1, $2, $3, $4, $5, $6)
+        INSERT INTO contests (id, name, registration_start_time, registration_end_time, start_time, end_time, eligible_to)
+        VALUES ($1, $2, $3, $4, $5, $6, $7)
     `
 
+	eligibilityStr := strings.Join(intSliceToStringSlice(c.EligibleTo), ",")
 	_, err := s.db.ExecContext(ctx, q,
 		c.ID,
 		c.Name,
@@ -101,6 +116,7 @@ func (s *ContestStore) CreateContest(ctx context.Context, c *models.Contest) err
 		c.RegistrationEndTime,
 		c.StartTime,
 		c.EndTime,
+		eligibilityStr,
 	)
 
 	if err != nil {
@@ -109,6 +125,14 @@ func (s *ContestStore) CreateContest(ctx context.Context, c *models.Contest) err
 	}
 
 	return nil
+}
+
+func intSliceToStringSlice(i []int) []string {
+	s := make([]string, len(i))
+	for idx, val := range i {
+		s[idx] = strconv.Itoa(val)
+	}
+	return s
 }
 
 func (s *ContestStore) UpdateContest(ctx context.Context, c *models.Contest) error {

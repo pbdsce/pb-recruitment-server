@@ -5,11 +5,12 @@ import "time"
 type Contest struct {
 	ID                    string `json:"id"` // UUID as string
 	Name                  string `json:"name"`
+	Description           string `json:"description"`             // base64 encoded
 	RegistrationStartTime int64  `json:"registration_start_time"` // Unix timestamp
 	RegistrationEndTime   int64  `json:"registration_end_time"`   // Unix timestamp
 	StartTime             int64  `json:"start_time"`              // Unix timestamp
 	EndTime               int64  `json:"end_time"`                // Unix timestamp
-	EligibleTo            string `json:"eligible_to"`             // Student year restriction
+	EligibleTo            []int  `json:"eligible_to"`             // Student year restriction
 }
 
 type ContestRegistrationStatus string

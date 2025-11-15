@@ -8,6 +8,16 @@ type GetContestResponse struct {
 	IsRegistered *bool `json:"is_registered,omitempty"` // Whether the user is registered for the contest
 }
 
+type CreateContestRequest struct {
+	Name                  string `json:"name" validate:"required"`
+	Description           string `json:"description" validate:"required"` // base64 encoded
+	RegistrationStartTime int64  `json:"registration_start_time" validate:"required"`
+	RegistrationEndTime   int64  `json:"registration_end_time" validate:"required,gtfield=RegistrationStartTime"`
+	StartTime             int64  `json:"start_time" validate:"required,gtfield=RegistrationStartTime"`
+	EndTime               int64  `json:"end_time" validate:"required,gtfield=StartTime"`
+	EligibleTo            []int  `json:"eligible_to" validate:"required,dive,oneof=1 2 3"` // Student year restriction
+}
+
 type ModifyRegistrationRequest struct {
 	Action RegisterationAction `json:"action" validate:"required,oneof=register unregister"`
 }

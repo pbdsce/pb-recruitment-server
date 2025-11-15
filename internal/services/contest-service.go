@@ -6,9 +6,9 @@ import (
 	"app/internal/models/dto"
 	"app/internal/stores"
 	"context"
+	"slices"
 
 	"fmt"
-	"strconv"
 
 	"github.com/google/uuid"
 
@@ -24,7 +24,6 @@ func NewContestService(stores *stores.Storage) *ContestService {
 }
 
 func (cs *ContestService) CreateContest(ctx context.Context, contest *models.Contest) (*models.Contest, error) {
-	contest.ID = uuid.NewString()
 	if err := cs.stores.Contests.CreateContest(ctx, contest); err != nil {
 		return nil, err
 	}
@@ -65,7 +64,7 @@ func (cs *ContestService) ModifyRegistration(ctx context.Context, contestID stri
 			return err
 		}
 
-		if contest.EligibleTo != strconv.Itoa(user.CurrentYear) {
+		if !slices.Contains(contest.EligibleTo, user.CurrentYear) {
 			log.Errorf("user %s is not eligible to contest %s", userID, contestID)
 			return common.InvalidYearError
 		}

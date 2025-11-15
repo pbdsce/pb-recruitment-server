@@ -10,6 +10,8 @@ import (
 	"strconv"
 
 	"github.com/labstack/echo/v4"
+	"github.com/labstack/gommon/log"
+	gonanoid "github.com/matoous/go-nanoid/v2"
 )
 
 type ContestController struct {
@@ -67,22 +69,29 @@ func (cc *ContestController) ListContests(ctx echo.Context) error {
 }
 
 // Admin Handlers
-
 func (cc *ContestController) HandleCreateContest(ctx echo.Context) error {
-	var newContest models.Contest
-
-	if err := ctx.Bind(&newContest); err != nil {
-		return ctx.JSON(http.StatusBadRequest, map[string]string{
-			"error": "invalid request body: please check your JSON format",
-		})
-	}
-
-	if newContest.Name == "" || newContest.StartTime == 0 || newContest.EndTime == 0 {
+	request := ctx.Get(common.VALIDATED_REQUEST_BODY).(*dto.CreateContestRequest)
+	if request.Name == "" || request.StartTime == 0 || request.EndTime == 0 {
 		return ctx.JSON(http.StatusBadRequest, map[string]string{
 			"error": "name, start_time, and end_time are required fields",
 		})
 	}
 
+	id, err := gonanoid.Generate("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ", 10)
+	if err != nil {
+		log.Errorf("failed to generate contest ID: %v", err)
+		return ctx.NoContent(http.StatusInternalServerError)
+	}
+	newContest := models.Contest{
+		ID:                    id,
+		Name:                  request.Name,
+		Description:           request.Description,
+		RegistrationStartTime: request.RegistrationStartTime,
+		RegistrationEndTime:   request.RegistrationEndTime,
+		StartTime:             request.StartTime,
+		EndTime:               request.EndTime,
+		EligibleTo:            request.EligibleTo,
+	}
 	createdContest, err := cc.contestService.CreateContest(ctx.Request().Context(), &newContest)
 	if err != nil {
 		return ctx.JSON(http.StatusInternalServerError, map[string]string{
