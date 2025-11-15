@@ -1,8 +1,9 @@
 package stores
 
 import (
-	"app/internal/models"
 	"app/internal/common"
+	"app/internal/models"
+	"app/internal/models/dto"
 	"context"
 	"database/sql"
 	"fmt"
@@ -10,6 +11,7 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
 	"github.com/google/uuid"
 )
 
@@ -48,17 +50,17 @@ func (s *SubmissionStore) GetSubmissionStatusByID(ctx context.Context, id string
 	return &sub, nil
 }
 
-func (s *SubmissionStore) GetSubmissionDetailsByID(ctx context.Context, id string) (*models.Submission, error) {
+func (s *SubmissionStore) GetSubmissionDetailsByID(ctx context.Context, id string) (*dto.GetSubmissionDetailsResponse, error) {
 	if s == nil || s.db == nil {
 		return nil, fmt.Errorf("submission store: db is not initialized")
 	}
 
 	const q = `
-		SELECT user_id, contest_id, problem_id, type, language, code, choices, status, created_at, runtime, memory
+		SELECT user_id, contest_id, problem_id, type, language, choices, status, created_at, runtime, memory
 		FROM submissions
 		WHERE id = $1
 	`
-	var sub models.Submission
+	var sub dto.GetSubmissionDetailsResponse
 	sub.ID = id
 
 	var rawChoices sql.NullString
@@ -70,7 +72,6 @@ func (s *SubmissionStore) GetSubmissionDetailsByID(ctx context.Context, id strin
 		&sub.ProblemID,
 		&sub.Type,
 		&sub.Language,
-		&sub.Code,
 		&rawChoices,
 		&sub.Status,
 		&sub.CreatedAt,
@@ -109,7 +110,7 @@ func (s *SubmissionStore) GetSubmissionDetailsByID(ctx context.Context, id strin
 	} else {
 		sub.TestCaseResults = testCaseResults
 	}
-	
+
 	return &sub, nil
 }
 
@@ -171,7 +172,7 @@ func (s *SubmissionStore) ListUserSubmissionsByProblemID(ctx context.Context, us
 		ORDER BY created_at DESC
 		LIMIT $3 OFFSET $4
 	`
-	
+
 	rows, err := s.db.QueryContext(ctx, q, userID, problemID, pageSize, offset)
 	if err != nil {
 		log.Printf("submission-store: query failed: %v", err)
@@ -227,8 +228,8 @@ func (s *SubmissionStore) CreateSubmission(ctx context.Context, sub *models.Subm
 
 	const q = `
 		INSERT INTO 
-		submissions (id, user_id, contest_id, problem_id, type, language, code, choices, status, created_at, runtime, memory)
-		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
+		submissions (id, user_id, contest_id, problem_id, type, language, choices, status, created_at, runtime, memory)
+		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
 		RETURNING id
 	`
 
@@ -240,7 +241,6 @@ func (s *SubmissionStore) CreateSubmission(ctx context.Context, sub *models.Subm
 		sub.ProblemID,
 		dbType,
 		sub.Language,
-		sub.Code,
 		mcqChoices,
 		dbStatus,
 		sub.CreatedAt,
