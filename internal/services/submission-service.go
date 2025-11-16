@@ -30,9 +30,11 @@ func (ss *SubmissionService) GetSubmissionDetailsByID(ctx context.Context, id st
 	if err != nil {
 		return nil, err
 	}
-	sub.Code, err = ss.s3.GetObject(ctx, sub.ID)
-	if err != nil {
-		return nil, err
+	if sub.Type == models.Code {
+		sub.Code, err = ss.s3.GetObject(ctx, sub.ID)
+		if err != nil {
+			return nil, err
+		}
 	}
 	return sub, nil
 }
@@ -59,9 +61,11 @@ func (ss *SubmissionService) CreateSubmission(ctx context.Context, userID string
 	if err != nil {
 		return "", err
 	}
-	err = ss.s3.PutObject(ctx, submissionID, req.Code)
-	if err != nil {
-		return "", err
+	if submissionType == models.Code {
+		err = ss.s3.PutObject(ctx, submissionID, req.Code)
+		if err != nil {
+			return "", err
+		}
 	}
 	return submissionID, nil
 }
