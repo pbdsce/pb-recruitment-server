@@ -3,20 +3,20 @@ package models
 type SubmissionType string
 
 const (
-	MCQ  SubmissionType = "MCQ"
-	Code SubmissionType = "Code"
+	MCQ  SubmissionType = "mcq"
+	Code SubmissionType = "code"
 )
 
 type SubmissionStatus string
 
 const (
-	Pending           SubmissionStatus = "Pending"
-	Accepted          SubmissionStatus = "Accepted"
-	WrongAnswer       SubmissionStatus = "Wrong Answer"
-	TimeLimitExceed   SubmissionStatus = "Time Limit Exceeded"
-	MemoryLimitExceed SubmissionStatus = "Memory Limit Exceeded"
-	RuntimeError      SubmissionStatus = "Runtime Error"
-	CompilationError  SubmissionStatus = "Compilation Error"
+	Pending           SubmissionStatus = "pending"
+	Accepted          SubmissionStatus = "accepted"
+	WrongAnswer       SubmissionStatus = "wrong_answer"
+	TimeLimitExceed   SubmissionStatus = "tle"
+	MemoryLimitExceed SubmissionStatus = "mle"
+	RuntimeError      SubmissionStatus = "rte"
+	CompilationError  SubmissionStatus = "wrong_answer"
 )
 
 type TestCaseResult struct {
