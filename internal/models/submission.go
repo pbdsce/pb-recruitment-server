@@ -16,7 +16,7 @@ const (
 	TimeLimitExceed   SubmissionStatus = "tle"
 	MemoryLimitExceed SubmissionStatus = "mle"
 	RuntimeError      SubmissionStatus = "rte"
-	CompilationError  SubmissionStatus = "wrong_answer"
+	CompilationError  SubmissionStatus = "failed_to_process"
 )
 
 type TestCaseResult struct {
