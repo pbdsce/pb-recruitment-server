@@ -42,4 +42,6 @@ func AddAdminRoutes(
 
 	//Leaderboard/User Management
 	adminGroup.PUT("/:contestid/leaderboard/:userid", contestController.HandleUpdateLeaderboardUser)
+
+	adminGroup.GET("/contests/:contestId/registrations", contestController.GetContestRegistrations)
 }

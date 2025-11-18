@@ -28,3 +28,13 @@ const (
 	RegisterAction   RegisterationAction = "register"
 	UnregisterAction RegisterationAction = "unregister"
 )
+
+type ContestRegistration struct {
+	UserID       string `json:"user_id"`
+	Name         string `json:"name"`
+	Email        string `json:"email"`
+	USN          string `json:"usn"`
+	Department   string `json:"department"`
+	CurrentYear  int    `json:"current_year"`
+	RegisteredAt int64  `json:"registered_at"`
+}

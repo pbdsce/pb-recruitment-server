@@ -275,3 +275,56 @@ func (s *ContestStore) UnregisterUser(ctx context.Context, contestID string, use
 
 	return nil
 }
+
+func (s *ContestStore) GetContestRegistrations(ctx context.Context, contestID string) ([]dto.ContestRegistration, error) {
+	if s == nil || s.db == nil {
+		return nil, fmt.Errorf("contest store: db is not initialized")
+	}
+
+	const q = `
+		SELECT 
+			u.id,
+			u.name,
+			u.email,
+			u.usn,
+			u.department,
+			u.current_year,
+			cr.registered_at
+		FROM contest_registrations cr
+		INNER JOIN users u ON cr.user_id = u.id
+		WHERE cr.contest_id = $1
+		ORDER BY cr.registered_at ASC
+	`
+
+	rows, err := s.db.QueryContext(ctx, q, contestID)
+	if err != nil {
+		log.Printf("contest-store: query registrations failed: %v", err)
+		return nil, fmt.Errorf("query contest registrations: %w", err)
+	}
+	defer rows.Close()
+
+	registrations := make([]dto.ContestRegistration, 0)
+	for rows.Next() {
+		var reg dto.ContestRegistration
+		if err := rows.Scan(
+			&reg.UserID,
+			&reg.Name,
+			&reg.Email,
+			&reg.USN,
+			&reg.Department,
+			&reg.CurrentYear,
+			&reg.RegisteredAt,
+		); err != nil {
+			log.Printf("contest-store: failed to scan registration row: %v", err)
+			continue
+		}
+		registrations = append(registrations, reg)
+	}
+
+	if err := rows.Err(); err != nil {
+		log.Printf("contest-store: rows error: %v", err)
+		return nil, fmt.Errorf("rows error: %w", err)
+	}
+
+	return registrations, nil
+}
