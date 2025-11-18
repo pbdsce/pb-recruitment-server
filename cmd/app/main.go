@@ -6,9 +6,9 @@ import (
 	"app/internal/controllers"
 	"app/internal/db"
 	"app/internal/routes"
+	"app/internal/s3"
 	"app/internal/services"
 	"app/internal/stores"
-	"app/internal/s3"
 	"log"
 
 	"go.uber.org/fx"
@@ -31,6 +31,7 @@ func main() {
 			services.NewUserService,
 			services.NewSubmissionService,
 			services.NewAdminService,
+			services.NewProblemService,
 			// Server
 			internal.NewEchoServer,
 			// Stores

@@ -5,6 +5,7 @@ import (
 	"app/internal/models/dto"
 	"context"
 	"database/sql"
+
 	"firebase.google.com/go/v4/auth"
 )
 
@@ -35,13 +36,6 @@ type Storage struct {
 	Rankings interface {
 		UpdateLeaderboardUser(ctx context.Context, contestID string, userID string, req *dto.UpdateLeaderboardUserRequest) error
 	}
-	Problems interface {
-		CreateProblem(ctx context.Context, p *models.Problem) error
-		UpdateProblem(ctx context.Context, p *models.Problem) error
-		DeleteProblem(ctx context.Context, contestID string, problemID string) error
-		GetProblemList(ctx context.Context, contestID string) ([]dto.ProblemOverview, error)
-		GetProblem(ctx context.Context, problemID string, contestID string) (*dto.GetProblemStatementResponse, error)
-	}
 	Admins interface {
 		IsAdmin(ctx context.Context, userID string) (bool, error)
 	}
@@ -53,7 +47,6 @@ func NewStorage(db *sql.DB) *Storage {
 		Users:       NewUserStore(db),
 		Submissions: NewSubmissionStore(db),
 		Rankings:    NewRankingStore(db),
-		Problems:    NewProblemStore(db),
 		Admins:      NewAdminStore(db),
 	}
 }

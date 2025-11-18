@@ -76,3 +76,41 @@ func (s *S3) GetObject(context context.Context, key string) (string, error) {
 
 	return string(body), nil
 }
+
+func (s *S3) DeleteObject(ctx context.Context, key string) error {
+	_, err := s.client.DeleteObject(ctx, &s3.DeleteObjectInput{
+		Bucket: aws.String(s.Bucket),
+		Key:    aws.String(key),
+	})
+	if err != nil {
+		log.Errorf("s3: failed to delete object %s: %v", key, err)
+		return err
+	}
+	return nil
+}
+
+func (s *S3) ListObjects(ctx context.Context, prefix string) ([]string, error) {
+	resp, err := s.client.ListObjectsV2(ctx, &s3.ListObjectsV2Input{
+		Bucket: aws.String(s.Bucket),
+		Prefix: aws.String(prefix),
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	var keys []string
+	for _, obj := range resp.Contents {
+		keys = append(keys, *obj.Key)
+	}
+
+	return keys, nil
+}
+
+func (s *S3) PutObjectOverwrite(ctx context.Context, key string, contents string) error {
+    _, err := s.client.PutObject(ctx, &s3.PutObjectInput{
+        Bucket: aws.String(s.Bucket),
+        Key:    aws.String(key),
+        Body:   strings.NewReader(contents),
+    })
+    return err
+}

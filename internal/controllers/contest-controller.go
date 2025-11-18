@@ -16,11 +16,13 @@ import (
 
 type ContestController struct {
 	contestService *services.ContestService
+	problemService *services.ProblemService
 }
 
-func NewContestController(contestService *services.ContestService) *ContestController {
+func NewContestController(contestService *services.ContestService, problemService *services.ProblemService) *ContestController {
 	return &ContestController{
 		contestService: contestService,
+		problemService: problemService,
 	}
 }
 
@@ -186,7 +188,7 @@ func (cc *ContestController) HandleCreateProblem(ctx echo.Context) error {
 
 	newProblem.ContestID = contestID
 
-	createdProblem, err := cc.contestService.CreateProblem(ctx.Request().Context(), &newProblem)
+	createdProblem, err := cc.problemService.CreateProblem(ctx.Request().Context(), &newProblem)
 	if err != nil {
 		return ctx.JSON(http.StatusInternalServerError, map[string]string{
 			"error": "failed to create problem",
@@ -222,7 +224,7 @@ func (cc *ContestController) HandleUpdateProblem(ctx echo.Context) error {
 	problemToUpdate.ContestID = contestID
 	problemToUpdate.ID = problemID
 
-	updatedProblem, err := cc.contestService.UpdateProblem(ctx.Request().Context(), &problemToUpdate)
+	updatedProblem, err := cc.problemService.UpdateProblem(ctx.Request().Context(), &problemToUpdate)
 	if err != nil {
 		return ctx.JSON(http.StatusInternalServerError, map[string]string{
 			"error": "failed to update problem",
@@ -242,7 +244,7 @@ func (cc *ContestController) HandleDeleteProblem(ctx echo.Context) error {
 		})
 	}
 
-	err := cc.contestService.DeleteProblem(ctx.Request().Context(), contestID, problemID)
+	err := cc.problemService.DeleteProblem(ctx.Request().Context(), contestID, problemID)
 	if err != nil {
 		return ctx.JSON(http.StatusInternalServerError, map[string]string{
 			"error": "failed to delete problem",
@@ -340,7 +342,7 @@ func (cc *ContestController) GetContestProblemsList(ctx echo.Context) error {
 		})
 	}
 
-	problems, err := cc.contestService.GetContestProblemsList(ctx.Request().Context(), contestID)
+	problems, err := cc.problemService.GetContestProblemsList(ctx.Request().Context(), contestID)
 	if err != nil {
 		if err == common.ContestNotFoundError {
 			return ctx.JSON(http.StatusNotFound, map[string]string{
@@ -377,7 +379,7 @@ func (cc *ContestController) GetContestProblem(ctx echo.Context) error {
 		})
 	}
 
-	problem, err := cc.contestService.GetContestProblem(ctx.Request().Context(), contestID, problemID)
+	problem, err := cc.problemService.GetContestProblem(ctx.Request().Context(), contestID, problemID)
 	if err != nil {
 		if err == common.ContestNotFoundError {
 			return ctx.JSON(http.StatusNotFound, map[string]string{

@@ -10,8 +10,6 @@ import (
 
 	"fmt"
 
-	"github.com/google/uuid"
-
 	"github.com/labstack/gommon/log"
 )
 
@@ -84,30 +82,6 @@ func (cs *ContestService) ListContests(ctx context.Context, page int) ([]models.
 	return cs.stores.Contests.ListContests(ctx, page)
 }
 
-//Problem Reated Services
-
-func (cs *ContestService) CreateProblem(ctx context.Context, problem *models.Problem) (*models.Problem, error) {
-
-	problem.ID = uuid.NewString()
-
-	if err := cs.stores.Problems.CreateProblem(ctx, problem); err != nil {
-		return nil, err
-	}
-
-	return problem, nil
-}
-
-func (cs *ContestService) UpdateProblem(ctx context.Context, problem *models.Problem) (*models.Problem, error) {
-	if err := cs.stores.Problems.UpdateProblem(ctx, problem); err != nil {
-		return nil, err
-	}
-	return problem, nil
-}
-
-func (cs *ContestService) DeleteProblem(ctx context.Context, contestID string, problemID string) error {
-	return cs.stores.Problems.DeleteProblem(ctx, contestID, problemID)
-}
-
 //Leaderboard related services
 
 func (cs *ContestService) UpdateLeaderboardUser(ctx context.Context, contestID string, userID string, req *dto.UpdateLeaderboardUserRequest) error {
@@ -130,14 +104,6 @@ func (cs *ContestService) GetProblemVisibility(ctx context.Context, contestID st
 	}
 
 	return nil
-}
-
-func (cs *ContestService) GetContestProblemsList(ctx context.Context, contestID string) ([]dto.ProblemOverview, error) {
-	return cs.stores.Problems.GetProblemList(ctx, contestID)
-}
-
-func (cs *ContestService) GetContestProblem(ctx context.Context, contestID string, problemID string) (*dto.GetProblemStatementResponse, error) {
-	return cs.stores.Problems.GetProblem(ctx, problemID, contestID)
 }
 
 func (cs *ContestService) GetContest(ctx context.Context, contestID string, userID string) (*dto.GetContestResponse, error) {
