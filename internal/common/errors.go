@@ -20,4 +20,6 @@ var (
 	ContestNotRunningError         = errors.New("contest is not running")
 	ContestRegistrationClosedError = errors.New("contest registration is closed")
 	InvalidYearError               = errors.New("invalid year")
+	KeyNotFoundError               = errors.New("key not found")
+	KeyAlreadyExistsError          = errors.New("key already exists")
 )

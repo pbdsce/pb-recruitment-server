@@ -3,20 +3,20 @@ package models
 type SubmissionType string
 
 const (
-	MCQ  SubmissionType = "MCQ"
-	Code SubmissionType = "Code"
+	MCQ  SubmissionType = "mcq"
+	Code SubmissionType = "code"
 )
 
 type SubmissionStatus string
 
 const (
-	Pending           SubmissionStatus = "Pending"
-	Accepted          SubmissionStatus = "Accepted"
-	WrongAnswer       SubmissionStatus = "Wrong Answer"
-	TimeLimitExceed   SubmissionStatus = "Time Limit Exceeded"
-	MemoryLimitExceed SubmissionStatus = "Memory Limit Exceeded"
-	RuntimeError      SubmissionStatus = "Runtime Error"
-	CompilationError  SubmissionStatus = "Compilation Error"
+	Pending           SubmissionStatus = "pending"
+	Accepted          SubmissionStatus = "accepted"
+	WrongAnswer       SubmissionStatus = "wrong_answer"
+	TimeLimitExceed   SubmissionStatus = "tle"
+	MemoryLimitExceed SubmissionStatus = "mle"
+	RuntimeError      SubmissionStatus = "rte"
+	CompilationError  SubmissionStatus = "failed_to_process"
 )
 
 type TestCaseResult struct {
@@ -36,7 +36,6 @@ type Submission struct {
 	ProblemID 		string           `json:"problem_id"`
 	Type      		SubmissionType   `json:"type"`
 	Language  		string           `json:"language,omitempty"` // For code submissions
-	Code      		string           `json:"code,omitempty"`     // Base64 encoded code for code submissions
 	Option    		[]int            `json:"option,omitempty"`   // Selected option(s) for MCQ submissions
 	Status    		SubmissionStatus `json:"status"`             // e.g., "Pending", "Accepted", "Wrong Answer", etc.
 	CreatedAt 		int64            `json:"created_at"`         // Unix timestamp
