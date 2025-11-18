@@ -108,3 +108,4 @@ func (us *UserStore) UpdateUserProfile(ctx context.Context, userID string, req *
 
 	return nil
 }
+

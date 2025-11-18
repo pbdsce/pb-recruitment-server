@@ -1,6 +1,7 @@
 package services
 
 import (
+	"app/internal/common"
 	"app/internal/models"
 	"app/internal/models/dto"
 	"app/internal/stores"
@@ -36,4 +37,39 @@ func (us *UserService) GetUserProfile(ctx context.Context, userID string) (*mode
 
 func (us *UserService) UpdateUserProfile(ctx context.Context, userID string, req *dto.UpdateUserProfileRequest) error {
 	return us.stores.Users.UpdateUserProfile(ctx, userID, req)
+}
+
+func (us *UserService) Signup(ctx context.Context, req *dto.SignupRequest) (*dto.SignupResponse, error) {
+	// Create Firebase user first
+	userRecord, err := us.authClient.CreateUser(ctx, (&auth.UserToCreate{}).
+		Email(req.Email).
+		Password(req.Password).
+		DisplayName(req.Name))
+	if err != nil {
+		if auth.IsEmailAlreadyExists(err) || auth.IsUIDAlreadyExists(err) {
+			return nil, common.UserAlreadyExistsError
+		}
+		return nil, fmt.Errorf("firebase create user: %w", err)
+	}
+
+	// Create user in database using Firebase UID
+	createReq := &dto.CreateUserRequest{
+		Name:         req.Name,
+		USN:          req.USN,
+		MobileNumber: req.MobileNumber,
+		CurrentYear:  req.CurrentYear,
+		Department:   req.Department,
+	}
+
+	if err := us.stores.Users.CreateUser(ctx, userRecord, createReq); err != nil {
+		// If DB insert fails, clean up Firebase user
+		if delErr := us.authClient.DeleteUser(ctx, userRecord.UID); delErr != nil {
+			log.Printf("user-service: cleanup firebase user %s failed: %v", userRecord.UID, delErr)
+		}
+		return nil, err
+	}
+
+	return &dto.SignupResponse{
+		UserID: userRecord.UID,
+	}, nil
 }

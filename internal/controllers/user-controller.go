@@ -23,9 +23,9 @@ func NewUserController(userService *services.UserService) *UserController {
 }
 
 func validateUserInput(usn string, mobile string, currentYear int) error {
-	usnPattern := `^1DS2[3-4](AI|AE|AU|BT|CG|MD|ET|EC|ME|EE|CH|CB|IC|CD|CS|CV|IS)[0-9]{3}$` // Example: 1DS24IC015
-	appNumberPattern := `^25UGDS[0-9]{4}$`                                                  // Example: 25UGDS1234
-	phonePattern := `^[0-9]{10}$`                                                           // Example: 9234567890
+	usnPattern := `^1DS2[3-4](AI|AE|AU|BT|CG|MD|ET|EC|ME|EE|CH|CB|IC|CD|CS|CV|IS|RI|EI|CY)[0-9]{3}$` // Example: 1DS24IC015
+	appNumberPattern := `^25UGDS[0-9]{4}$`                                                           // Example: 25UGDS1234
+	phonePattern := `^[0-9]{10}$`                                                                    // Example: 9234567890
 
 	usnUpper := strings.ToUpper(usn)
 
@@ -99,4 +99,22 @@ func (uc *UserController) UpdateUserProfile(ctx echo.Context) error {
 	}
 
 	return ctx.NoContent(http.StatusCreated)
+}
+
+func (uc *UserController) Signup(ctx echo.Context) error {
+	reqBody := ctx.Get(common.VALIDATED_REQUEST_BODY).(*dto.SignupRequest)
+
+	if err := validateUserInput(reqBody.USN, reqBody.MobileNumber, reqBody.CurrentYear); err != nil {
+		return ctx.JSON(http.StatusBadRequest, map[string]string{"error": err.Error()})
+	}
+
+	resp, err := uc.userService.Signup(ctx.Request().Context(), reqBody)
+	if err != nil {
+		if errors.Is(err, common.UserAlreadyExistsError) {
+			return ctx.JSON(http.StatusConflict, map[string]string{"error": err.Error()})
+		}
+		return ctx.JSON(http.StatusInternalServerError, map[string]string{"error": "failed to sign up user"})
+	}
+
+	return ctx.JSON(http.StatusCreated, resp)
 }
