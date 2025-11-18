@@ -9,6 +9,7 @@ import (
 )
 
 type Storage struct {
+	DB *sql.DB
 	// Declarations of method extensions for each store go here
 	Contests interface {
 		ListContests(context.Context, int) ([]models.Contest, error)
@@ -24,6 +25,8 @@ type Storage struct {
 		CreateUser(context.Context, *auth.UserRecord, *dto.CreateUserRequest) error
 		GetUserProfile(context.Context, string) (*models.User, error)
 		UpdateUserProfile(context.Context, string, *dto.UpdateUserProfileRequest) error
+		CreatePendingUserTx(context.Context, *sql.Tx, string, *dto.SignupRequest) error
+		UpdateUserIDTx(context.Context, *sql.Tx, string, string) error
 	}
 	Submissions interface {
 		GetSubmissionStatusByID(context.Context, string) (*models.Submission, error)
@@ -49,6 +52,7 @@ type Storage struct {
 
 func NewStorage(db *sql.DB) *Storage {
 	return &Storage{
+		DB:          db,
 		Contests:    NewContestStore(db),
 		Users:       NewUserStore(db),
 		Submissions: NewSubmissionStore(db),

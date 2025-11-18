@@ -108,3 +108,63 @@ func (us *UserStore) UpdateUserProfile(ctx context.Context, userID string, req *
 
 	return nil
 }
+
+func (us *UserStore) CreatePendingUserTx(ctx context.Context, tx *sql.Tx, tempID string, req *dto.SignupRequest) error {
+	if us == nil || tx == nil {
+		return fmt.Errorf("user store: transaction is not initialized")
+	}
+
+	const q = `
+		INSERT INTO users (id, name, email, usn, mobile_number, current_year, department)
+		VALUES ($1, $2, $3, $4, $5, $6, $7)
+		ON CONFLICT DO NOTHING
+	`
+
+	res, err := tx.ExecContext(ctx, q, tempID, req.Name, req.Email, req.USN, req.MobileNumber, req.CurrentYear, req.Department)
+	if err != nil {
+		log.Printf("user-store: insert pending user error %v", err)
+		return fmt.Errorf("insert pending user error: %w", err)
+	}
+
+	affected, err := res.RowsAffected()
+	if err != nil {
+		log.Printf("user-store: pending user rows error %v", err)
+		return fmt.Errorf("pending user rows error: %w", err)
+	}
+
+	if affected == 0 {
+		return common.UserAlreadyExistsError
+	}
+
+	return nil
+}
+
+func (us *UserStore) UpdateUserIDTx(ctx context.Context, tx *sql.Tx, oldID, newID string) error {
+	if us == nil || tx == nil {
+		return fmt.Errorf("user store: transaction is not initialized")
+	}
+
+	const q = `
+		UPDATE users
+		SET id = $2
+		WHERE id = $1
+	`
+
+	res, err := tx.ExecContext(ctx, q, oldID, newID)
+	if err != nil {
+		log.Printf("user-store: update user id error %v", err)
+		return fmt.Errorf("update user id error: %w", err)
+	}
+
+	affected, err := res.RowsAffected()
+	if err != nil {
+		log.Printf("user-store: update user id rows error %v", err)
+		return fmt.Errorf("update user id rows error: %w", err)
+	}
+
+	if affected == 0 {
+		return common.UserNotFoundError
+	}
+
+	return nil
+}
