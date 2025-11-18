@@ -4,7 +4,7 @@ type CreateUserRequest struct {
 	Name         string `json:"name" validate:"required"`
 	USN          string `json:"usn" validate:"required"`
 	MobileNumber string `json:"mobile_number" validate:"required"`
-	CurrentYear  int    `json:"current_year" validate:"required,min=2000,max=2100"`
+	CurrentYear  int    `json:"current_year" validate:"required,min=1,max=3"`
 	Department   string `json:"department" validate:"required"`
 }
 
@@ -25,6 +25,5 @@ type SignupRequest struct {
 }
 
 type SignupResponse struct {
-	UserID      string `json:"user_id"`
-	CustomToken string `json:"custom_token"`
+	UserID string `json:"user_id"`
 }
