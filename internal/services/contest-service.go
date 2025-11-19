@@ -4,8 +4,10 @@ import (
 	"app/internal/common"
 	"app/internal/models"
 	"app/internal/models/dto"
+	"app/internal/s3"
 	"app/internal/stores"
 	"context"
+	"encoding/json"
 	"slices"
 
 	"fmt"
@@ -17,10 +19,14 @@ import (
 
 type ContestService struct {
 	stores *stores.Storage
+	s3     *s3.S3
 }
 
-func NewContestService(stores *stores.Storage) *ContestService {
-	return &ContestService{stores: stores}
+func NewContestService(stores *stores.Storage, s3Client *s3.S3) *ContestService {
+	return &ContestService{
+		stores: stores,
+		s3:     s3Client,
+	}
 }
 
 func (cs *ContestService) CreateContest(ctx context.Context, contest *models.Contest) (*models.Contest, error) {
@@ -86,9 +92,31 @@ func (cs *ContestService) ListContests(ctx context.Context, page int) ([]models.
 
 //Problem Reated Services
 
-func (cs *ContestService) CreateProblem(ctx context.Context, problem *models.Problem) (*models.Problem, error) {
+func (cs *ContestService) CreateProblem(ctx context.Context, contestID string, req *dto.CreateProblemRequest) (*models.Problem, error) {
 
-	problem.ID = uuid.NewString()
+	problem := &models.Problem{
+		ID:                 uuid.NewString(),
+		ContestID:          contestID,
+		Name:               req.Name,
+		Score:              req.Score,
+		Type:               req.Type,
+		Answer:             req.Answer,
+		HasMultipleAnswers: req.Type == "mcq" && len(req.Answer) > 1,
+	}
+
+	s3Key := fmt.Sprintf("problems/%s/%s.json", problem.ContestID, problem.ID)
+
+	payload := map[string]string{
+		"description": req.Description,
+	}
+
+	data, _ := json.Marshal(payload)
+
+	if err := cs.s3.PutObject(ctx, s3Key, string(data)); err != nil {
+		return nil, err
+	}
+
+	problem.Description = s3Key
 
 	if err := cs.stores.Problems.CreateProblem(ctx, problem); err != nil {
 		return nil, err
@@ -97,7 +125,40 @@ func (cs *ContestService) CreateProblem(ctx context.Context, problem *models.Pro
 	return problem, nil
 }
 
-func (cs *ContestService) UpdateProblem(ctx context.Context, problem *models.Problem) (*models.Problem, error) {
+func (cs *ContestService) UpdateProblem(ctx context.Context, contestID string, problemID string, req *dto.CreateProblemRequest) (*models.Problem, error) {
+
+	meta, err := cs.stores.Problems.GetProblem(ctx, problemID, contestID)
+	if err != nil {
+		return nil, err
+	}
+
+	s3Key := meta.Description
+
+	payload := map[string]string{
+		"description": req.Description,
+	}
+	data, err := json.Marshal(payload)
+	if err != nil {
+		return nil, err
+	}
+
+	if err := cs.s3.PutObjectOverwrite(ctx, s3Key, string(data)); err != nil {
+		return nil, err
+	}
+
+	hasMultiple := req.Type == "mcq" && len(req.Answer) > 1
+
+	problem := &models.Problem{
+		ID:                 problemID,
+		ContestID:          contestID,
+		Name:               req.Name,
+		Description:        s3Key,
+		Score:              req.Score,
+		Type:               req.Type,
+		Answer:             req.Answer,
+		HasMultipleAnswers: hasMultiple,
+	}
+
 	if err := cs.stores.Problems.UpdateProblem(ctx, problem); err != nil {
 		return nil, err
 	}
@@ -105,7 +166,23 @@ func (cs *ContestService) UpdateProblem(ctx context.Context, problem *models.Pro
 }
 
 func (cs *ContestService) DeleteProblem(ctx context.Context, contestID string, problemID string) error {
-	return cs.stores.Problems.DeleteProblem(ctx, contestID, problemID)
+
+	meta, err := cs.stores.Problems.GetProblem(ctx, problemID, contestID)
+	if err != nil {
+		return err
+	}
+
+	s3Key := meta.Description
+
+	if err := cs.stores.Problems.DeleteProblem(ctx, contestID, problemID); err != nil {
+		return err
+	}
+
+	if err := cs.s3.DeleteObject(ctx, s3Key); err != nil {
+		log.Errorf("failed to delete S3 file for problem %s: %v", problemID, err)
+	}
+
+	return nil
 }
 
 //Leaderboard related services
@@ -137,7 +214,22 @@ func (cs *ContestService) GetContestProblemsList(ctx context.Context, contestID 
 }
 
 func (cs *ContestService) GetContestProblem(ctx context.Context, contestID string, problemID string) (*dto.GetProblemStatementResponse, error) {
-	return cs.stores.Problems.GetProblem(ctx, problemID, contestID)
+
+	meta, err := cs.stores.Problems.GetProblem(ctx, problemID, contestID)
+	if err != nil {
+		return nil, err
+	}
+
+	s3Key := meta.Description
+
+	desc, err := cs.s3.GetObject(ctx, s3Key)
+	if err != nil {
+		return nil, err
+	}
+
+	meta.Description = desc
+
+	return meta, nil
 }
 
 func (cs *ContestService) GetContest(ctx context.Context, contestID string, userID string) (*dto.GetContestResponse, error) {

@@ -171,22 +171,20 @@ func (cc *ContestController) HandleCreateProblem(ctx echo.Context) error {
 		})
 	}
 
-	var newProblem models.Problem
-	if err := ctx.Bind(&newProblem); err != nil {
+	var req dto.CreateProblemRequest
+	if err := ctx.Bind(&req); err != nil {
 		return ctx.JSON(http.StatusBadRequest, map[string]string{
 			"error": "invalid request body",
 		})
 	}
 
-	if newProblem.Name == "" || newProblem.Score <= 0 || newProblem.Type == "" {
+	if req.Name == "" || req.Score <= 0 || req.Type == "" {
 		return ctx.JSON(http.StatusBadRequest, map[string]string{
 			"error": "name, score, and type are required fields",
 		})
 	}
 
-	newProblem.ContestID = contestID
-
-	createdProblem, err := cc.contestService.CreateProblem(ctx.Request().Context(), &newProblem)
+	createdProblem, err := cc.contestService.CreateProblem(ctx.Request().Context(), contestID, &req)
 	if err != nil {
 		return ctx.JSON(http.StatusInternalServerError, map[string]string{
 			"error": "failed to create problem",
@@ -206,23 +204,20 @@ func (cc *ContestController) HandleUpdateProblem(ctx echo.Context) error {
 		})
 	}
 
-	var problemToUpdate models.Problem
-	if err := ctx.Bind(&problemToUpdate); err != nil {
+	var req dto.CreateProblemRequest
+	if err := ctx.Bind(&req); err != nil {
 		return ctx.JSON(http.StatusBadRequest, map[string]string{
 			"error": "invalid request body",
 		})
 	}
 
-	if problemToUpdate.Name == "" || problemToUpdate.Score <= 0 || problemToUpdate.Type == "" {
+	if req.Name == "" || req.Score <= 0 || req.Type == "" {
 		return ctx.JSON(http.StatusBadRequest, map[string]string{
 			"error": "name, score, and type are required fields",
 		})
 	}
 
-	problemToUpdate.ContestID = contestID
-	problemToUpdate.ID = problemID
-
-	updatedProblem, err := cc.contestService.UpdateProblem(ctx.Request().Context(), &problemToUpdate)
+	updatedProblem, err := cc.contestService.UpdateProblem(ctx.Request().Context(), contestID, problemID, &req)
 	if err != nil {
 		return ctx.JSON(http.StatusInternalServerError, map[string]string{
 			"error": "failed to update problem",
