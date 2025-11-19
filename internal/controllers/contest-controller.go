@@ -386,3 +386,21 @@ func (cc *ContestController) GetContestProblem(ctx echo.Context) error {
 
 	return ctx.JSON(http.StatusOK, problem)
 }
+
+func (cc *ContestController) GetContestRegistrations(ctx echo.Context) error {
+	contestID := ctx.Param("contestId")
+	if contestID == "" {
+		return ctx.JSON(http.StatusBadRequest, map[string]string{
+			"error": "contest ID is required",
+		})
+	}
+
+	registrations, err := cc.contestService.GetContestRegistrations(ctx.Request().Context(), contestID)
+	if err != nil {
+		return ctx.JSON(http.StatusInternalServerError, map[string]string{
+			"error": "failed to get contest registrations",
+		})
+	}
+
+	return ctx.JSON(http.StatusOK, registrations)
+}

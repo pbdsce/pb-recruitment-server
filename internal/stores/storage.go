@@ -19,6 +19,7 @@ type Storage struct {
 		GetContest(context.Context, string) (*dto.GetContestResponse, error)
 		RegisterUser(context.Context, string, string) error
 		UnregisterUser(context.Context, string, string) error
+		GetContestRegistrations(context.Context, string) ([]dto.ContestRegistration, error)
 	}
 	Users interface {
 		CreateUser(context.Context, *auth.UserRecord, *dto.CreateUserRequest) error

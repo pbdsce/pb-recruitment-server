@@ -250,3 +250,7 @@ func (cs *ContestService) GetContest(ctx context.Context, contestID string, user
 	contest_response.IsRegistered = &r
 	return contest_response, nil
 }
+
+func (cs *ContestService) GetContestRegistrations(ctx context.Context, contestID string) ([]dto.ContestRegistration, error) {
+	return cs.stores.Contests.GetContestRegistrations(ctx, contestID)
+}
